@@ -54,16 +54,6 @@ html {
     min-height: 100vh;
 }
 
-#download {
-    background-color: rgb(17, 48, 80);
-    margin-right: 28px;
-}
-
-#convert {
-    background-color: rgb(17, 48, 80);
-    width: 126.188px;
-    margin-left: 4px;
-}
 
 article,
 aside,
@@ -90,6 +80,16 @@ body {
     min-height: 100vh;
 }
 
+#download {
+    background-color: rgb(17, 48, 80);
+    margin-right: 28px;
+}
+
+#convert {
+    background-color: rgb(17, 48, 80);
+    width: 126.188px;
+    margin-left: 4px;
+}
 [tabindex="-1"]:focus:not(:focus-visible) {
     outline: 0 !important
 }
