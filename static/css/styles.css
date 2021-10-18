@@ -50,20 +50,20 @@ html {
     -webkit-text-size-adjust: 100%;
     -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
     margin: 0;
-    min-height: 100vh;
-    overflow: hidden;
-}
-
-body {
-    margin: 0;
-    box-sizing: border-box;
-}
-
-html,
-body {
     height: 100%;
+    min-height: 100vh;
 }
 
+#download {
+    background-color: rgb(17, 48, 80);
+    margin-right: 28px;
+}
+
+#convert {
+    background-color: rgb(17, 48, 80);
+    width: 126.188px;
+    margin-left: 4px;
+}
 
 article,
 aside,
@@ -88,17 +88,6 @@ body {
     text-align: left;
     background-color: #fff;
     min-height: 100vh;
-}
-
-#download {
-    background-color: rgb(17, 48, 80);
-    margin-right: 28px;
-}
-
-#convert {
-    background-color: rgb(17, 48, 80);
-    width: 126.188px;
-    margin-left: 4px;
 }
 
 [tabindex="-1"]:focus:not(:focus-visible) {
