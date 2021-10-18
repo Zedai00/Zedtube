@@ -43,6 +43,13 @@
     box-sizing: border-box
 }
 
+html,
+body {
+    margin: 0;
+    height: 100%;
+}
+
+
 html {
     font-family: sans-serif;
     line-height: 1.15;
