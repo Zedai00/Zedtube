@@ -10985,7 +10985,7 @@ a.text-dark:hover {
 
 .masthead {
     padding-top: calc(6rem + 74px);
-    padding-bottom: 10
+    padding-bottom: 10vh;
 }
 
 .masthead .masthead-heading {
