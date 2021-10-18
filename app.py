@@ -25,4 +25,3 @@ def download():
             result = ydl.extract_info("{}".format(url))
             name = ydl.prepare_filename(result)
             return send_from_directory(app.root_path, name, as_attachment=True)
-
