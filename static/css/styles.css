@@ -11005,7 +11005,7 @@ a.text-dark:hover {
 @media (min-width:992px) {
     .masthead {
         padding-top: calc(6rem + 104px);
-        padding-bottom: 7rem
+        padding-bottom: 6.9rem
     }
 
     .masthead .masthead-heading {
