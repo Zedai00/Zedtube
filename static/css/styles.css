@@ -86,7 +86,7 @@ body {
     color: #212529;
     text-align: left;
     background-color: #fff;
-    height: 100%;
+    min-height: 100vh;
 }
 
 [tabindex="-1"]:focus:not(:focus-visible) {
