@@ -1,0 +1,25 @@
+{% extends "layout.html" %}
+{% block title %}
+Home
+{% endblock %}
+{% block main%}
+<header class="masthead bg-primary text-white text-center">
+	<div class="container d-flex align-items-center flex-column">
+		<!-- Masthead Avatar Image-->
+		<h1 class="masthead-heading mb-0">Zedtube</h1>
+		<!-- Masthead Heading-->
+		<h1 class="masthead-subheading mb-0">ONLINE VIDEO DOWNLOADER</h1>
+		<!-- Icon Divider-->
+		<div class="divider-custom divider-light">
+			<div class="divider-custom-line"></div>
+			<div class="divider-custom-icon"><i class="fas fa-star"></i></div>
+			<div class="divider-custom-line"></div>
+		</div>
+		<!-- Masthead Subheading-->
+		<div class="d-grid gap-2 d-md-block">
+			<a href="/download" class="btn btn-primary btn-lg">Download</a>
+			<a href="/convert" class="btn btn-primary btn-lg">Convert</a>
+		</div>
+	</div>
+</header>
+{% endblock %}

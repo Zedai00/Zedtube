@@ -1,0 +1,14 @@
+{% extends "index.html" %}
+{% block title %}
+Download
+{% endblock %}
+{% block main %}
+<form action="/download" method="post">
+    <div>
+        <input type="url" name="url">
+    </div>
+    <div>
+        <input type="submit" value="Submit">
+    </div>
+</form>
+{% endblock %}
