@@ -53,12 +53,14 @@ html {
 #download {
     background-color: rgb(17, 48, 80);
     margin-right: 28px;
+    color: white;
 }
 
 #convert {
     background-color: rgb(17, 48, 80);
     width: 126.188px;
     margin-left: 4px;
+    color: white;
 }
 
 article,

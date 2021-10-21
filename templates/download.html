@@ -3,12 +3,19 @@
     Download
 {% endblock %}
 {% block main %}
-<form action="/download" method="post">
-    <div>
-        <input type="url" name="url">
+<header class="download masthead bg-primary text-white text-center">
+    <div class="container d-flex align-items-center flex-column">
+        <form action="/download" method="post">
+            <div id="link">
+                <!-- <h1 class="masthead-heading mb-0">Download</h1> -->
+                <h4>
+                    <input placeholder="Enter The Link Here" id="url" type="url" name="url">
+                </h4>
+            </div>
+            <div id="submit">
+                <button id="download" class="btn btn-primary btn-lg" type="submit">Download</button>
+            </div>
+        </form>
     </div>
-    <div>
-        <input type="submit" value="Submit">
-    </div>
-</form>
+</header>
 {% endblock %}

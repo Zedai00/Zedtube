@@ -1,0 +1,28 @@
+.download {
+    padding-top: 31.2vh;
+    padding-bottom: 40.2vh;
+    color: white;
+}
+
+@media (min-width:768px) {
+    .download {
+        padding-top: 36.2vh !important;
+        padding-bottom: 35.2vh !important;
+    }
+}
+
+#url {
+    /* height: 100px;
+    width: 100px; */
+    color: rgb(0, 0, 0);
+    background-color: white;
+    text-align: center;
+    border: white !important;
+    border-radius: 10px;
+    outline-color: white;
+}
+
+#download {
+    margin-top: 20px;
+}
+

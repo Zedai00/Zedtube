@@ -1,4 +1,5 @@
 from __future__ import unicode_literals
+import os
 from werkzeug.utils import send_from_directory
 import youtube_dl
 from flask import Flask, redirect, render_template, request, send_file,send_from_directory, safe_join, abort
@@ -24,4 +25,6 @@ def download():
             ydl.download([url,])
             result = ydl.extract_info("{}".format(url))
             name = ydl.prepare_filename(result)
-            return send_from_directory(app.root_path, name, as_attachment=True)
+
+            name = os.system("ffmpeg -i " + name + "-preset ultrafast test.mkv")
+            return send_from_directory(app.root_path, "test.mkv", as_attachment=True)
