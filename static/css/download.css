@@ -49,3 +49,16 @@
     display: block;
     margin-right: 10px;
 }
+
+.done {
+    padding-top: 31.2vh;
+    padding-bottom: 36.1vh;
+    color: white;
+}
+
+@media (min-width:768px) {
+    .done {
+        padding-top: 36.2vh !important;
+        padding-bottom: 35.6vh !important;
+    }
+}
