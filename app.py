@@ -1,6 +1,7 @@
 from __future__ import unicode_literals
 import os
 import io
+import atexit
 import redis
 from tempfile import mkdtemp
 import mimetypes
@@ -54,17 +55,24 @@ def done():
     if request.method == "GET":
         return render_template("done.html")
     name = session["name"]
-    mime = mimetypes.guess_type(name)
-    file_path = app.root_path+'/'+name
-    return_data = io.BytesIO()
-    with open(file_path, 'rb') as fo:
-        return_data.write(fo.read())
-    # (after writing, cursor will be at last byte, so move it to start)
-    return_data.seek(0)
+    # mime = mimetypes.guess_type(name)
+    # file_path = app.root_path+'/'+name
+    # return_data = io.BytesIO()
+    # with open(file_path, 'rb') as fo:
+    #     return_data.write(fo.read())
+    # # (after writing, cursor will be at last byte, so move it to start)
+    # return_data.seek(0)
 
+    # os.remove(file_path)
+
+    # return send_file(return_data, mimetype=mime[0],
+    #                  attachment_filename=name, as_attachment=True)
+
+    return send_from_directory(app.root_path, name, as_attachment=True)
+
+def delete():
+    name = session['name']
+    file_path = app.root_path+'/'+name
     os.remove(file_path)
 
-    return send_file(return_data, mimetype=mime[0],
-                     attachment_filename=name, as_attachment=True)
-
-    # return send_from_directory(app.root_path, name, as_attachment=True)
+atexit.register(delete)
