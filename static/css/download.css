@@ -27,3 +27,25 @@
     background-color: rgb(17, 48, 80);
     color: white;
 }
+
+#loading {
+    position: fixed;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    background-color: #fff;
+    z-index: 99;
+}
+
+#loading-image {
+    z-index: 100;
+}
+
+#wait {
+    display: block;
+    margin-right: 10px;
+}

@@ -1,8 +1,16 @@
-{% extends "index.html" %}
+{% extends "layout.html" %}
 {% block title %}
-Download
+wait
 {% endblock %}
 {% block main %}
+<div id="loading">
+    <div id="wait">
+        <h5>Please Wait While We Are Processing Your Request</h5>
+    </div>
+    <div class="spinner-border" style="width: 3rem; height: 3rem;" role="status">
+        <span class="sr-only">Loading...</span>
+    </div>
+</div>
 <header class="download masthead bg-primary text-white text-center">
     <div class="container d-flex align-items-center flex-column">
         <form action="/download" method="post">
@@ -18,5 +26,13 @@ Download
         </form>
     </div>
 </header>
-<script src="../static/ps.js"></script>
+<script type="text/javascript">
+    function navigate() {
+        window.location.href = 'done';  // redirect when done!
+    }
+    fetch('process').then(navigate);
+    $(window).on('load', function () {
+        $('#loading').show();
+    })
+</script>
 {% endblock %}
