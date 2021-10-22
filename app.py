@@ -1,11 +1,12 @@
 from __future__ import unicode_literals
 import os
+import io
 import redis
 from tempfile import mkdtemp
-
+import mimetypes
 import youtube_dl
 from flask import (Flask, render_template, request, send_file,
-                   send_from_directory, session)
+                   send_from_directory, session, after_this_request)
 from flask_session import Session
 
 app = Flask(__name__)
@@ -53,4 +54,17 @@ def done():
     if request.method == "GET":
         return render_template("done.html")
     name = session["name"]
-    return send_from_directory(app.root_path, name, as_attachment=True)
+    mime = mimetypes.guess_type(name)
+    file_path = app.root_path+'/'+name
+    return_data = io.BytesIO()
+    with open(file_path, 'rb') as fo:
+        return_data.write(fo.read())
+    # (after writing, cursor will be at last byte, so move it to start)
+    return_data.seek(0)
+
+    os.remove(file_path)
+
+    return send_file(return_data, mimetype=mime[0],
+                     attachment_filename=name, as_attachment=True)
+
+    # return send_from_directory(app.root_path, name, as_attachment=True)
