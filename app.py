@@ -1,7 +1,6 @@
 from __future__ import unicode_literals
 import os
 import io
-import atexit
 import redis
 from tempfile import mkdtemp
 import mimetypes
@@ -9,14 +8,7 @@ import youtube_dl
 from flask import (Flask, render_template, request, send_file,
                    send_from_directory, session, after_this_request)
 from flask_session import Session
-
-def delete():
-    root = os.listdir(app.root_path)
-    for i in root:
-        if i.endswith(".mp4"):
-            os.remove(app.root_path+'/'+i)
-
-atexit.register(delete)
+import atexit
 
 app = Flask(__name__)
 
@@ -57,6 +49,14 @@ def process():
         session["name"] = name
         return name
 
+def delete():
+    with app.app_context():
+        root = os.listdir(app.root_path)
+        for i in root:
+            if i.endswith(".mp4"):
+                os.remove(app.root_path+'/'+i)
+
+atexit.register(delete)
 
 @app.route("/done", methods=["GET", "POST"])
 def done():
