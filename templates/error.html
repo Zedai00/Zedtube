@@ -1,0 +1,28 @@
+{% extends "layout.html" %}
+{% block title %}
+Error
+{% endblock %}
+{% block main %}
+<style>
+    .download {
+    padding-top: 39.2vh;
+    padding-bottom: 34.7vh;
+}
+
+@media (min-width:768px) {
+    .download {
+                padding-top: 38.3vh !important;
+    padding-bottom: 35.6vh !important;
+    }
+}
+</style>
+<header class="download masthead bg-primary text-white text-center">
+    <div class="container d-flex align-items-center flex-column">
+    <!-- <img alt="{{ top }}" class="border"
+    src="http://memegen.link/custom/{{ top | urlencode }}/{{ bottom | urlencode }}.jpg?alt=https://i.imgur.com/CsCgN7Ll.png"
+    title="{{ top }}"> -->
+    <h2>Error!</h2>
+    <h2>{{bottom}}</h2>
+    </div>
+</header>
+{% endblock %}

@@ -3,10 +3,10 @@ import os
 import io
 import redis
 from tempfile import mkdtemp
-import mimetypes
 import youtube_dl
+from werkzeug.exceptions import default_exceptions, HTTPException, InternalServerError
 from flask import (Flask, render_template, request, send_file,
-                   send_from_directory, session, after_this_request)
+                   send_from_directory, session, flash, redirect, url_for)
 from flask_session import Session
 import atexit
 
@@ -22,6 +22,8 @@ Session(app)
 
 @app.route("/")
 def index():
+    session.clear()
+    session['name'] = None
     return render_template("index.html")
 
 
@@ -30,6 +32,9 @@ def download():
     if request.method == "GET":
         return render_template("download.html")
     else:
+        if not request.form.get('url'):
+            error = 'Please Enter A Link'
+            return render_template('download.html', error=error)
         session["url"] = request.form.get("url")
         return render_template("waiting.html")
 
@@ -37,17 +42,22 @@ def download():
 @app.route("/process")
 def process():
     url = session["url"]
-    ydl_opts = {"cachedir": "False", "ignoreerrors": "True"}
-    with youtube_dl.YoutubeDL(ydl_opts) as ydl:
-        ydl.download(
-            [
-                url,
-            ]
-        )
-        result = ydl.extract_info("{}".format(url))
-        name = ydl.prepare_filename(result)
-        session["name"] = name
-        return name
+    ydl_opts = {"cachedir": "False"}
+    ydl = youtube_dl.YoutubeDL(ydl_opts)
+    ydl.download(
+        [
+            url,
+        ]
+    )
+    result = ydl.extract_info("{}".format(url))
+    name = ydl.prepare_filename(result)
+    session["name"] = name
+
+@app.route("/error")
+def error():
+    text = request.args['text']
+    code = request.args['code']
+    return apology(text, code)
 
 def delete():
     with app.app_context():
@@ -56,11 +66,15 @@ def delete():
             if i.endswith(".mp4"):
                 os.remove(app.root_path+'/'+i)
 
+
 atexit.register(delete)
+
 
 @app.route("/done", methods=["GET", "POST"])
 def done():
     if request.method == "GET":
+        if not session['name']:
+            return redirect(url_for('error', text='Please Enter a Valid Link', code=403))
         return render_template("done.html")
     name = session["name"]
     # mime = mimetypes.guess_type(name)
@@ -79,3 +93,19 @@ def done():
     return send_from_directory(app.root_path, name, as_attachment=True)
 
 
+def apology(message, code=400):
+    """Render message as an apology to user."""
+    return render_template("error.html", top=code, bottom=message), code
+
+
+@app.errorhandler(Exception)
+def errorhandler(e):
+    """Handle error"""
+    if not isinstance(e, HTTPException):
+        e = InternalServerError()
+    return apology(e.name, e.code)
+
+
+# Listen for errors
+for code in default_exceptions:
+    app.errorhandler(code)(errorhandler)
