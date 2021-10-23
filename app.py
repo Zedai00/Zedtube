@@ -10,6 +10,14 @@ from flask import (Flask, render_template, request, send_file,
                    send_from_directory, session, after_this_request)
 from flask_session import Session
 
+def delete():
+    root = os.listdir(app.root_path)
+    for i in root:
+        if i.endswith(".mp4"):
+            os.remove(app.root_path+'/'+i)
+
+atexit.register(delete)
+
 app = Flask(__name__)
 
 app.config["SESSION_TYPE"] = "redis"
@@ -70,9 +78,4 @@ def done():
 
     return send_from_directory(app.root_path, name, as_attachment=True)
 
-def delete():
-    name = session['name']
-    file_path = app.root_path+'/'+name
-    os.remove(file_path)
 
-atexit.register(delete)
