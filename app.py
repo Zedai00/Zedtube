@@ -1,22 +1,24 @@
 from __future__ import unicode_literals
-import os
-import io
-import redis
-from tempfile import mkdtemp
-import youtube_dl
-from werkzeug.exceptions import default_exceptions, HTTPException, InternalServerError
-from flask import (Flask, render_template, request, send_file,
-                   send_from_directory, session, flash, redirect, url_for)
-from flask_session import Session
+
 import atexit
+import os
+import shlex
+import subprocess
+from tempfile import mkdtemp
+
+import youtube_dl
+from flask import (Flask, redirect, render_template, request,
+                   send_from_directory, session, url_for)
+from flask_session import Session
+from werkzeug.exceptions import (HTTPException, InternalServerError,
+                                 default_exceptions)
+
 
 app = Flask(__name__)
-
-app.config["SESSION_TYPE"] = "redis"
-app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY")
+app.config["SESSION_FILE_DIR"] = mkdtemp()
+app.config["SESSION_TYPE"] = "filesystem"
 app.config["SESSION_PERMANENT"] = False
-app.config["SESSION_USE_SIGNER"] = True
-app.config["SESSION_REDIS"] = redis.from_url(os.environ.get("REDIS_SESSION"))
+app.config["secret_key"] = "b'^\xe5\xcb\xac\xd0`\x1co\x82\x97J\x8a\x81?\x00\x1a'"
 Session(app)
 
 
@@ -31,18 +33,17 @@ def index():
 def download():
     if request.method == "GET":
         return render_template("download.html")
-    else:
-        if not request.form.get('url'):
-            error = 'Please Enter A Link'
-            return render_template('download.html', error=error)
-        session["url"] = request.form.get("url")
-        return render_template("waiting.html")
+    if not request.form.get('url'):
+        error = 'Please Enter A Link'
+        return render_template('download.html', error=error)
+    session["url"] = request.form.get("url")
+    return render_template("waiting.html")
 
 
 @app.route("/process")
 def process():
     url = session["url"]
-    ydl_opts = {"cachedir": "False"}
+    ydl_opts = {}
     ydl = youtube_dl.YoutubeDL(ydl_opts)
     ydl.download(
         [
@@ -60,12 +61,16 @@ def error():
     code = request.args['code']
     return apology(text, code)
 
+
 def delete():
     with app.app_context():
-        root = os.listdir(app.root_path)
+        command_line = 'pwd'
+        args = shlex.split(command_line)
+        path = subprocess.check_output(args).decode('utf-8').strip()
+        root = os.listdir(path)
         for i in root:
-            if i.endswith(".mp4"):
-                os.remove(app.root_path+'/'+i)
+            if i.endswith(".mp4") or i.endswith(".part"):
+                os.remove(path+'/'+i)
 
 
 atexit.register(delete)
@@ -78,19 +83,6 @@ def done():
             return redirect(url_for('error', text='Please Enter a Valid Link', code=403))
         return render_template("done.html")
     name = session["name"]
-    # mime = mimetypes.guess_type(name)
-    # file_path = app.root_path+'/'+name
-    # return_data = io.BytesIO()
-    # with open(file_path, 'rb') as fo:
-    #     return_data.write(fo.read())
-    # # (after writing, cursor will be at last byte, so move it to start)
-    # return_data.seek(0)
-
-    # os.remove(file_path)
-
-    # return send_file(return_data, mimetype=mime[0],
-    #                  attachment_filename=name, as_attachment=True)
-
     return send_from_directory(app.root_path, name, as_attachment=True)
 
 
