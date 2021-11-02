@@ -1,0 +1,29 @@
+{% extends "layout.html" %}
+{% block title %}
+Convert
+{% endblock %}
+{% block main %}
+<style>
+    .download {
+        padding-top: 43.6vh !important;
+        padding-bottom: 40.2vh !important;
+}
+
+@media (min-width:768px) {
+    .download {
+        padding-top: 48.6vh !important;
+        padding-bottom: 35.2vh !important;
+    }
+}
+
+</style>
+<header class="download masthead bg-primary text-white text-center">
+    <div class="container d-flex align-items-center flex-column">
+        <!-- upload a file -->
+        <form action="{{ url_for('convert') }}" method="post" enctype="multipart/form-data">
+            <input type="file" name="file" />
+            <input type="submit" value="Upload" />
+        </form>
+    </div>
+</header>
+{% endblock %}

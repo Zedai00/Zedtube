@@ -2,17 +2,18 @@ from __future__ import unicode_literals
 
 import atexit
 import os
+import re
 import shlex
 import subprocess
 from tempfile import mkdtemp
 
 import youtube_dl
 from flask import (Flask, redirect, render_template, request,
-                   send_from_directory, session, url_for)
+                   send_from_directory, session, sessions, url_for)
 from flask_session import Session
+from pathvalidate import sanitize_filename
 from werkzeug.exceptions import (HTTPException, InternalServerError,
                                  default_exceptions)
-
 
 app = Flask(__name__)
 app.config["SESSION_FILE_DIR"] = mkdtemp()
@@ -37,7 +38,36 @@ def download():
         error = 'Please Enter A Link'
         return render_template('download.html', error=error)
     session["url"] = request.form.get("url")
-    return render_template("waiting.html")
+    r = request.path
+    return render_template("waiting.html", r=r)
+
+
+@app.route("/convert", methods=["POST", "GET"])
+def convert():
+    if request.method == "GET":
+        return render_template("convert.html")
+    if not request.files['file']:
+        error = 'Please Choose A File To Upload'
+        return render_template('convert.html', error=error)
+    file = request.files['file']
+    file.save(os.path.join(app.root_path, file.filename))
+    session["file"] = file.filename
+    r = request.path
+    return render_template("waiting.html", r=r)
+
+
+@app.route("/converter")
+def converter():
+    file = session["file"]
+    file = re.escape(file)
+    file = file.replace("'", "\\'")
+    file = file.replace('"', '\\"')
+    outputfile = file.split('.')[0]
+    ffmpeg = f'ffmpeg -i {file} -preset ultrafast -codec copy {outputfile}.mkv'
+    session["name"] = f"{session['file'].split('.')[0]}.mkv"
+    args = shlex.split(ffmpeg)
+    subprocess.call(args)
+    return redirect(url_for('done'))
 
 
 @app.route("/process")
@@ -53,6 +83,7 @@ def process():
     result = ydl.extract_info("{}".format(url))
     name = ydl.prepare_filename(result)
     session["name"] = name
+    return name
 
 
 @app.route("/error")
@@ -73,7 +104,7 @@ def delete():
                 os.remove(path+'/'+i)
 
 
-atexit.register(delete)
+# atexit.register(delete)
 
 
 @app.route("/done", methods=["GET", "POST"])

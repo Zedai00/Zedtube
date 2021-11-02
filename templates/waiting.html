@@ -11,21 +11,7 @@ wait
         <span class="sr-only">Loading...</span>
     </div>
 </div>
-<header class="download masthead bg-primary text-white text-center">
-    <div class="container d-flex align-items-center flex-column">
-        <form action="/download" method="post">
-            <div id="link">
-                <!-- <h1 class="masthead-heading mb-0">Download</h1> -->
-                <h4>
-                    <input placeholder="Enter The Link Here" id="url" type="url" name="url">
-                </h4>
-            </div>
-            <div id="submit">
-                <button name="down" id="down" class="btn btn-primary btn-lg" type="submit">Download</button>
-            </div>
-        </form>
-    </div>
-</header>
+{% if r == "/download" %}
 <script type="text/javascript">
     function navigate() {
         window.location.href = 'done';  // redirect when done!
@@ -35,4 +21,15 @@ wait
         $('#loading').show();
     })
 </script>
+{% else %}
+<script type="text/javascript">
+    function navigate() {
+        window.location.href = 'done';  // redirect when done!
+    }
+    fetch('converter').then(navigate);
+    $(window).on('load', function () {
+        $('#loading').show();
+    })
+</script>
+{% endif %}
 {% endblock %}
