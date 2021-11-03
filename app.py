@@ -146,5 +146,5 @@ for code in default_exceptions:
 
 @app.route('/update_server', methods=['POST'])
 def webhook():
-    os.system('git pull origin main')
+    os.system('git pull origin main --no-edit')
     return "okay"
