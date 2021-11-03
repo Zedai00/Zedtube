@@ -22,7 +22,7 @@ Convert
         <!-- upload a file -->
         <form action="{{ url_for('convert') }}" method="post" enctype="multipart/form-data">
             <div class="input-group mb-3">
-                <input  style="padding: 0.25rem .1rem;" name="file" type="file" class="form-control" id="inputGroupFile02" required>
+                <input  style="padding: 0.25rem .1rem;" name="file" type="file" class="form-control" id="inputGroupFile02" accept="video/mp4,video/x-m4v,video/*" required>
                 <select  name="format" id="format" required>
                     <option hidden selected disabled value="">Extension</option>
                     {% for i in formats %}
