@@ -49,8 +49,9 @@ def download():
 @app.route("/convert", methods=["POST", "GET"])
 def convert():
     if request.method == "GET":
-        with open("formats.txt") as file:
-            formats = []
+        pwd =  subprocess.check_output(["pwd"]).decode("utf-8").strip()
+        formats = []
+        with open(f"{pwd}/formats.txt") as file:
             for line in file:
                 formats.append(line.strip())
         return render_template("convert.html", formats=formats)
