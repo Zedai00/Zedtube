@@ -6,10 +6,10 @@ import re
 import shlex
 import subprocess
 from tempfile import mkdtemp
-
+import git 
 import youtube_dl
 from flask import (Flask, redirect, render_template, request,
-                   send_from_directory, session, sessions, url_for)
+                   send_from_directory, session, url_for)
 from flask_session import Session
 from werkzeug.exceptions import (HTTPException, InternalServerError,
                                  default_exceptions)
@@ -144,3 +144,14 @@ def errorhandler(e):
 # Listen for errors
 for code in default_exceptions:
     app.errorhandler(code)(errorhandler)
+
+@app.route('/update_server', methods=['POST'])
+def webhook():
+    if request.method == 'POST':
+        repo = git.Repo('path/to/git_repo')
+        origin = repo.remotes.origin
+        origin.pull()
+        return 'Updated PythonAnywhere successfully', 200
+    else:
+        return 'Wrong event type', 400
+
