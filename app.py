@@ -147,11 +147,8 @@ for code in default_exceptions:
 
 @app.route('/update_server', methods=['POST'])
 def webhook():
-    if request.method == 'POST':
-        repo = git.Repo('/home/Zedgamer9128/mysite')
-        origin = repo.remotes.origin
-        origin.pull()
-        return 'Updated PythonAnywhere successfully', 200
-    else:
-        return 'Wrong event type', 400
-
+    pwd = subprocess.run(["pwd"], shell=True, stdout=subprocess.PIPE).stdout.decode("utf-8").strip()
+    repo = git.Repo(pwd)
+    origin = repo.remotes.origin
+    origin.pull()
+    return "okay"
