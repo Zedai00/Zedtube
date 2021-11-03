@@ -26,6 +26,8 @@ app.config["SESSION_PERMANENT"] = False
 app.config["secret_key"] = "b'^\xe5\xcb\xac\xd0`\x1co\x82\x97J\x8a\x81?\x00\x1a'"
 Session(app)
 
+pwd = "/home/Zedgamer9128/mysite"
+
 
 @app.route("/")
 def index():
@@ -49,7 +51,6 @@ def download():
 @app.route("/convert", methods=["POST", "GET"])
 def convert():
     if request.method == "GET":
-        pwd =  subprocess.check_output(["pwd"]).decode("utf-8").strip()
         formats = []
         with open(f"{pwd}/formats.txt") as file:
             for line in file:
@@ -60,7 +61,7 @@ def convert():
         return render_template("convert.html", error=error)
     file = request.files["file"]
     format = request.form.get("format")
-    file.save(os.path.join(app.root_path, file.filename))
+    file.save(os.path.join(os.getcwd(), file.filename))
     session["file"] = file.filename
     session["format"] = format
     r = request.path
@@ -133,7 +134,7 @@ def done():
             )
         return render_template("done.html")
     name = session["name"]
-    return send_from_directory(app.root_path, name, as_attachment=True)
+    return send_from_directory(os.getcwd(), name, as_attachment=True)
 
 
 def apology(message, code=400):
