@@ -6,7 +6,6 @@ import re
 import shlex
 import subprocess
 from tempfile import mkdtemp
-import git 
 import youtube_dl
 from flask import (Flask, redirect, render_template, request,
                    send_from_directory, session, url_for)
