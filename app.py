@@ -147,8 +147,5 @@ for code in default_exceptions:
 
 @app.route('/update_server', methods=['POST'])
 def webhook():
-    pwd = subprocess.run(["pwd"], shell=True, stdout=subprocess.PIPE).stdout.decode("utf-8").strip()
-    repo = git.Repo(pwd)
-    origin = repo.remotes.origin
-    origin.pull()
+    os.system('git pull origin main')
     return "okay"
