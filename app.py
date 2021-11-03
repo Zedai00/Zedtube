@@ -26,7 +26,7 @@ app.config["SESSION_PERMANENT"] = False
 app.config["secret_key"] = "b'^\xe5\xcb\xac\xd0`\x1co\x82\x97J\x8a\x81?\x00\x1a'"
 Session(app)
 
-pwd = "/home/Zedgamer9128/mysite"
+pwd = os.path.dirname(os.path.abspath(__file__))
 
 
 @app.route("/")
@@ -134,7 +134,8 @@ def done():
             )
         return render_template("done.html")
     name = session["name"]
-    return send_from_directory(os.getcwd(), name, as_attachment=True)
+    path = os.getcwd()
+    return send_from_directory(path, name, as_attachment=True)
 
 
 def apology(message, code=400):
