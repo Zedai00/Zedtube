@@ -21,8 +21,16 @@ Convert
     <div class="container d-flex align-items-center flex-column">
         <!-- upload a file -->
         <form action="{{ url_for('convert') }}" method="post" enctype="multipart/form-data">
-            <input type="file" name="file" />
-            <input type="submit" value="Upload" />
+            <div class="input-group mb-3">
+                <input  style="padding: 0.25rem .1rem;" name="file" type="file" class="form-control" id="inputGroupFile02" required>
+                <select  name="format" id="format" required>
+                    <option hidden selected disabled value="">Extension</option>
+                    {% for i in formats %}
+                    <option value="{{ i }}">{{ i }}</option>
+                    {% endfor %}
+                </select>
+                <input class="input-group-text" type="submit" value="Upload" for="inputGroupFile02"></input>
+            </div>
         </form>
     </div>
 </header>

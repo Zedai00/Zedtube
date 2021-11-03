@@ -11,7 +11,6 @@ import youtube_dl
 from flask import (Flask, redirect, render_template, request,
                    send_from_directory, session, sessions, url_for)
 from flask_session import Session
-from pathvalidate import sanitize_filename
 from werkzeug.exceptions import (HTTPException, InternalServerError,
                                  default_exceptions)
 
@@ -45,13 +44,19 @@ def download():
 @app.route("/convert", methods=["POST", "GET"])
 def convert():
     if request.method == "GET":
-        return render_template("convert.html")
+        with open("formats.txt") as file:
+            formats = []
+            for line in file:
+                formats.append(line.strip())
+        return render_template("convert.html", formats=formats)
     if not request.files['file']:
         error = 'Please Choose A File To Upload'
         return render_template('convert.html', error=error)
     file = request.files['file']
+    format = request.form.get("format")
     file.save(os.path.join(app.root_path, file.filename))
     session["file"] = file.filename
+    session["format"] = format
     r = request.path
     return render_template("waiting.html", r=r)
 
@@ -63,8 +68,12 @@ def converter():
     file = file.replace("'", "\\'")
     file = file.replace('"', '\\"')
     outputfile = file.split('.')[0]
-    ffmpeg = f'ffmpeg -i {file} -preset ultrafast -codec copy {outputfile}.mkv'
-    session["name"] = f"{session['file'].split('.')[0]}.mkv"
+    if session["format"]:
+        format = session["format"].lower()
+    else:
+        format = file.split('.')[1]
+    ffmpeg = f'ffmpeg -i {file} -preset ultrafast -codec copy {outputfile}.{format}'
+    session["name"] = f"{session['file'].split('.')[0]}.{format}"
     args = shlex.split(ffmpeg)
     subprocess.call(args)
     return redirect(url_for('done'))
@@ -100,11 +109,13 @@ def delete():
         path = subprocess.check_output(args).decode('utf-8').strip()
         root = os.listdir(path)
         for i in root:
-            if i.endswith(".mp4") or i.endswith(".part"):
-                os.remove(path+'/'+i)
+            with open("formats.txt") as file:
+                for line in file:
+                    if i.endswith(line.strip().lower()) or i.endswith(".part"):
+                        os.remove(path+'/'+i)
 
 
-# atexit.register(delete)
+atexit.register(delete)
 
 
 @app.route("/done", methods=["GET", "POST"])
