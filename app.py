@@ -168,5 +168,7 @@ for code in default_exceptions:
 
 @app.route("/update_server", methods=["POST"])
 def webhook():
-    os.system("git pull origin main --no-edit")
+    command_line = "git pull origin main"
+    args = shlex.split(command_line)
+    subprocess.Popen(args, cwd=pwd)
     return "okay"
