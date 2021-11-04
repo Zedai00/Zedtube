@@ -112,7 +112,7 @@ def process():
             command_line = f"youtube-dl {url} --merge-output-format {format}"
             subprocess.call(shlex.split(command_line))
             command_line = f"youtube-dl {url} --get-filename --merge-output-format {format} --skip-download"
-            title = subprocess.check_output(shlex.split(command_line)).decode("utf-8")
+            title = subprocess.check_output(shlex.split(command_line)).decode("utf-8").strip()
         except :
             args = shlex.split("yotube-dl --rm-cache-dir")
             subprocess.call(args)
@@ -122,7 +122,7 @@ def process():
             command_line = f"youtube-dl {url}"
             subprocess.call(shlex.split(command_line))
             command_line = f"youtube-dl {url} --get-filename"
-            title = subprocess.check_output(shlex.split(command_line)).decode("utf-8")
+            title = subprocess.check_output(shlex.split(command_line)).decode("utf-8").strip()
         except:
             args = shlex.split("yotube-dl --rm-cache-dir")
             subprocess.call(args)
