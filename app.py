@@ -36,6 +36,8 @@ with open("formats.txt", "r") as file:
 @app.route("/")
 def index():
     session.clear()
+    p = os.getcwd()
+    print(p)
     session["name"] = None
     return render_template("index.html")
 
