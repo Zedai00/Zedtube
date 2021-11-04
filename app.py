@@ -97,12 +97,21 @@ def converter():
     subprocess.call(args)
     return redirect(url_for("done"))
 
+def command(cmd):
+    cmd = re.escape(cmd)
+    cmd = cmd.replace("'", "\\'")
+    cmd = cmd.replace('"', '\\"')
+    args = shlex.split(cmd)
+    return args
+
 
 @app.route("/process")
 def process():
     url = session["url"]
     format = request.form.get("format").lower()
     if format:
+        args = shlex.split("youtube-dl --rm-cache-dir")
+        subprocess.Popen(args, cwd=os.getcwd())
         command_line = f"youtube-dl {url} --merge-output-format {format}"
         command_line = re.escape(command_line)
         command_line = command_line.replace("'", "\\'")
@@ -114,6 +123,9 @@ def process():
         command_line = command_line.replace('"', '\\"')
         title = subprocess.check_output(shlex.split(command_line)).decode("utf-8")
     else:
+        command_line = "youtube-dl --rm-cache-dir"
+        command_line = re.escape(command_line)
+        subprocess.call(shlex.split(command_line))
         command_line = f"youtube-dl {url}"
         command_line = re.escape(command_line)
         command_line = command_line.replace("'", "\\'")
