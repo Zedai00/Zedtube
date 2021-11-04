@@ -25,6 +25,7 @@ app.config["SESSION_PERMANENT"] = False
 app.config["secret_key"] = os.getenv("SECRET_KEY")
 Session(app)
 
+
 pwd = os.path.dirname(os.path.abspath(__file__))
 formats = []
 with open("formats.txt", "r") as file:
@@ -59,6 +60,7 @@ def download():
     if not request.form.get("url"):
         error = "Please Enter A Link"
         return render_template("download.html", error=error)
+    session["format"] = request.form.get("format")
     session["url"] = request.form.get("url")
     r = request.path
     return render_template("waiting.html", r=r)
@@ -101,29 +103,28 @@ def converter():
 @app.route("/process")
 def process():
     url = session["url"]
-    format = request.form.get("format").lower()
+    format = session["format"]
     if format:
-        command_line = f"youtube-dl {url} --merge-output-format {format} --rm-cache-dir"
-        command_line = re.escape(command_line)
-        command_line = command_line.replace("'", "\\'")
-        command_line = command_line.replace('"', '\\"')
-        subprocess.call(shlex.split(command_line))
-        command_line = f"youtube-dl {url} --rm-cache-dir --get-filename -merge-output-format {format} --skip-download"
-        command_line = re.escape(command_line)
-        command_line = command_line.replace("'", "\\'")
-        command_line = command_line.replace('"', '\\"')
-        title = subprocess.check_output(shlex.split(command_line)).decode("utf-8")
+        try: 
+            format = format.lower()
+            command_line = f"youtube-dl {url} --merge-output-format {format}"
+            subprocess.call(shlex.split(command_line))
+            command_line = f"youtube-dl {url} --get-filename --merge-output-format {format} --skip-download"
+            title = subprocess.check_output(shlex.split(command_line)).decode("utf-8")
+        except :
+            args = shlex.split("yotube-dl --rm-cache-dir")
+            subprocess.call(args)
+            process()
     else:
-        command_line = f"youtube-dl {url} --rm-cache-dir"
-        command_line = re.escape(command_line)
-        command_line = command_line.replace("'", "\\'")
-        command_line = command_line.replace('"', '\\"')
-        subprocess.call(shlex.split(command_line))
-        command_line = f"youtube-dl {url} --get-filename --rm-cache-dir"
-        command_line = re.escape(command_line)
-        command_line = command_line.replace("'", "\\'")
-        command_line = command_line.replace('"', '\\"')
-        title = subprocess.check_output(shlex.split(command_line)).decode("utf-8")
+        try: 
+            command_line = f"youtube-dl {url}"
+            subprocess.call(shlex.split(command_line))
+            command_line = f"youtube-dl {url} --get-filename"
+            title = subprocess.check_output(shlex.split(command_line)).decode("utf-8")
+        except:
+            args = shlex.split("yotube-dl --rm-cache-dir")
+            subprocess.call(args)
+            process()
     session["name"] = title
     return title
 
