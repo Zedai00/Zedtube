@@ -95,7 +95,7 @@ def converter():
         format = session["format"].lower()
     else:
         format = file.split(".")[1]
-    ffmpeg = f"ffmpeg -i {file} -preset ultrafast -codec copy {outputfile}.{format}"
+    ffmpeg = f"ffmpeg -i {file} -preset ultrafast {outputfile}.{format}"
     session["name"] = f"{session['file'].split('.')[0]}.{format}"
     args = shlex.split(ffmpeg)
     subprocess.call(args)
