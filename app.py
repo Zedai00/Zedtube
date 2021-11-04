@@ -21,7 +21,7 @@ Session(app)
 
 pwd = os.path.dirname(os.path.abspath(__file__))
 formats = []
-with open(f"{pwd}/formats.txt") as file:
+with open('formats.txt', 'r') as file:
     for line in file:
         formats.append(line.strip())
 
