@@ -97,13 +97,7 @@ def converter():
     subprocess.call(args)
     return redirect(url_for("done"))
 
-def command(cmd):
-    cmd = re.escape(cmd)
-    cmd = cmd.replace("'", "\\'")
-    cmd = cmd.replace('"', '\\"')
-    args = shlex.split(cmd)
-    return args
-
+    
 
 @app.route("/process")
 def process():
