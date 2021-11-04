@@ -6,11 +6,17 @@ import re
 import shlex
 import subprocess
 from tempfile import mkdtemp
-from flask import (Flask, redirect, render_template, request,
-                   send_from_directory, session, url_for)
+from flask import (
+    Flask,
+    redirect,
+    render_template,
+    request,
+    send_from_directory,
+    session,
+    url_for,
+)
 from flask_session import Session
-from werkzeug.exceptions import (HTTPException, InternalServerError,
-                                 default_exceptions)
+from werkzeug.exceptions import HTTPException, InternalServerError, default_exceptions
 
 app = Flask(__name__)
 app.config["SESSION_FILE_DIR"] = mkdtemp()
@@ -21,9 +27,10 @@ Session(app)
 
 pwd = os.path.dirname(os.path.abspath(__file__))
 formats = []
-with open(f"{pwd}/formats.txt") as file:
+with open("formats.txt", "r") as file:
     for line in file:
         formats.append(line.strip())
+
 
 @app.route("/")
 def index():
