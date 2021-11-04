@@ -3,6 +3,16 @@
 Download
 {% endblock %}
 {% block main %}
+<style>
+    select {
+    background: #113050;
+    word-wrap: normal;
+    height: 40px;
+    width: 200px;
+    margin: 20px 10px 1px 10px;
+    color: white;
+}
+</style>
 <header class="download masthead bg-primary text-white text-center">
     <div class="container d-flex align-items-center flex-column">
         <form action="/download" method="post">
@@ -11,6 +21,12 @@ Download
                 <h4>
                     <input placeholder="Enter The Link Here" autocomplete="url" id="url" type="url" name="url" required>
                 </h4>
+                <select name="format" id="format">
+                    <option hidden selected disabled value="">Extension</option>
+                    {% for i in formats %}
+                    <option value="{{ i }}">{{ i }}</option>
+                    {% endfor %}
+                </select>
             </div>
             <div id="submit">
                 <input name="down" id="down" class="btn btn-primary btn-lg" type="submit" value="Download"></input>

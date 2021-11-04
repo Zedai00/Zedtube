@@ -6,18 +6,11 @@ import re
 import shlex
 import subprocess
 from tempfile import mkdtemp
-import youtube_dl
-from flask import (
-    Flask,
-    redirect,
-    render_template,
-    request,
-    send_from_directory,
-    session,
-    url_for,
-)
+from flask import (Flask, redirect, render_template, request,
+                   send_from_directory, session, url_for)
 from flask_session import Session
-from werkzeug.exceptions import HTTPException, InternalServerError, default_exceptions
+from werkzeug.exceptions import (HTTPException, InternalServerError,
+                                 default_exceptions)
 
 app = Flask(__name__)
 app.config["SESSION_FILE_DIR"] = mkdtemp()
@@ -27,7 +20,10 @@ app.config["secret_key"] = "b'^\xe5\xcb\xac\xd0`\x1co\x82\x97J\x8a\x81?\x00\x1a'
 Session(app)
 
 pwd = os.path.dirname(os.path.abspath(__file__))
-
+formats = []
+with open(f"{pwd}/formats.txt") as file:
+    for line in file:
+        formats.append(line.strip())
 
 @app.route("/")
 def index():
@@ -36,10 +32,23 @@ def index():
     return render_template("index.html")
 
 
+@app.route("/done", methods=["GET", "POST"])
+def done():
+    if request.method == "GET":
+        if not session["name"]:
+            return redirect(
+                url_for("error", text="Please Enter a Valid Link", code=403)
+            )
+        return render_template("done.html")
+    name = session["name"]
+    path = os.getcwd()
+    return send_from_directory(path, name, as_attachment=True)
+
+
 @app.route("/download", methods=["POST", "GET"])
 def download():
     if request.method == "GET":
-        return render_template("download.html")
+        return render_template("download.html", formats=formats)
     if not request.form.get("url"):
         error = "Please Enter A Link"
         return render_template("download.html", error=error)
@@ -51,10 +60,6 @@ def download():
 @app.route("/convert", methods=["POST", "GET"])
 def convert():
     if request.method == "GET":
-        formats = []
-        with open(f"{pwd}/formats.txt") as file:
-            for line in file:
-                formats.append(line.strip())
         return render_template("convert.html", formats=formats)
     if not request.files["file"]:
         error = "Please Choose A File To Upload"
@@ -89,17 +94,31 @@ def converter():
 @app.route("/process")
 def process():
     url = session["url"]
-    ydl_opts = {}
-    ydl = youtube_dl.YoutubeDL(ydl_opts)
-    ydl.download(
-        [
-            url,
-        ]
-    )
-    result = ydl.extract_info("{}".format(url))
-    name = ydl.prepare_filename(result)
-    session["name"] = name
-    return name
+    format = request.form.get("format").lower()
+    if format:
+        command_line = f"youtube-dl {url} --merge-output-format {format}"
+        command_line = re.escape(command_line)
+        command_line = command_line.replace("'", "\\'")
+        command_line = command_line.replace('"', '\\"')
+        subprocess.call(shlex.split(command_line))
+        command_line = f"youtube-dl {url} --get-filename -merge-output-format {format} --skip-download"
+        command_line = re.escape(command_line)
+        command_line = command_line.replace("'", "\\'")
+        command_line = command_line.replace('"', '\\"')
+        title = subprocess.check_output(shlex.split(command_line)).decode("utf-8")
+    else:
+        command_line = f"youtube-dl {url}"
+        command_line = re.escape(command_line)
+        command_line = command_line.replace("'", "\\'")
+        command_line = command_line.replace('"', '\\"')
+        subprocess.call(shlex.split(command_line))
+        command_line = f"youtube-dl {url} --get-filename"
+        command_line = re.escape(command_line)
+        command_line = command_line.replace("'", "\\'")
+        command_line = command_line.replace('"', '\\"')
+        title = subprocess.check_output(shlex.split(command_line)).decode("utf-8")
+    session["name"] = title
+    return title
 
 
 @app.route("/error")
@@ -111,31 +130,15 @@ def error():
 
 def delete():
     with app.app_context():
-        command_line = "pwd"
-        args = shlex.split(command_line)
-        path = subprocess.check_output(args).decode("utf-8").strip()
-        root = os.listdir(path)
+        root = os.listdir(pwd)
         for i in root:
-            with open("formats.txt") as file:
+            with open(f"{pwd}/formats.txt") as file:
                 for line in file:
                     if i.endswith(line.strip().lower()) or i.endswith(".part"):
-                        os.remove(path + "/" + i)
+                        os.remove(pwd + "/" + i)
 
 
 atexit.register(delete)
-
-
-@app.route("/done", methods=["GET", "POST"])
-def done():
-    if request.method == "GET":
-        if not session["name"]:
-            return redirect(
-                url_for("error", text="Please Enter a Valid Link", code=403)
-            )
-        return render_template("done.html")
-    name = session["name"]
-    path = os.getcwd()
-    return send_from_directory(path, name, as_attachment=True)
 
 
 def apology(message, code=400):
