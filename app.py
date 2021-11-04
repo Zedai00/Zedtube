@@ -22,7 +22,7 @@ app = Flask(__name__)
 app.config["SESSION_FILE_DIR"] = mkdtemp()
 app.config["SESSION_TYPE"] = "filesystem"
 app.config["SESSION_PERMANENT"] = False
-app.config["secret_key"] = "b'^\xe5\xcb\xac\xd0`\x1co\x82\x97J\x8a\x81?\x00\x1a'"
+app.config["secret_key"] = os.getenv("SECRET_KEY")
 Session(app)
 
 pwd = os.path.dirname(os.path.abspath(__file__))
