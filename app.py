@@ -49,7 +49,7 @@ def done():
             )
         return render_template("done.html")
     name = session["name"]
-    print(os.getcwd)
+    print(pwd)
     path = os.getcwd()
     return send_from_directory(path, name, as_attachment=True)
 
