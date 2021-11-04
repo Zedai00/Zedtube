@@ -49,9 +49,6 @@ def done():
             )
         return render_template("done.html")
     name = session["name"]
-    pwd = subprocess.run(
-        shlex.split("pwd"), stdout=subprocess.PIPE, stderr=subprocess.PIPE
-    ).stdout.decode("utf-8").strip()
     return send_from_directory(pwd, name, as_attachment=True)
 
 
