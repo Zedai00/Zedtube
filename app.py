@@ -51,7 +51,8 @@ def done():
             )
         return render_template("done.html")
     name = session["name"]
-    return send_from_directory(pwd, name, as_attachment=True)
+    p = os.getcwd()
+    return send_from_directory(p, name, as_attachment=True)
 
 
 @app.route("/download", methods=["POST", "GET"])
