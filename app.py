@@ -99,7 +99,7 @@ def converter():
         format = session["format"].lower()
     else:
         format = file.split(".")[1]
-    ffmpeg = f"ffmpeg -i {file} {outputfile}.{format} -strict -2"
+    ffmpeg = f"ffmpeg -y -i {file} {outputfile}.{format} -strict -2"
     session["name"] = f"{session['file'].split('.')[0]}.{format}"
     args = shlex.split(ffmpeg)
     subprocess.call(args)
@@ -122,7 +122,7 @@ def process():
             file = file.replace("'", "\\'")
             file = file.replace('"', '\\"')
             outputfile = file.split(".")[0]
-            ffmpeg = f"ffmpeg -i {file} {outputfile}.{format} -strict -2"
+            ffmpeg = f"ffmpeg -y -i {file} {outputfile}.{format} -strict -2"
             args = shlex.split(ffmpeg)
             subprocess.call(args)
             session["name"] = f"{title.split('.')[0]}.{format}"
