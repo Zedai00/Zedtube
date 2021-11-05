@@ -3,7 +3,8 @@
 wait
 {% endblock %}
 {% block main %}
-<div id="loading">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/download.css') }}">
+<div class="download" id="loading">
     <div id="wait">
         <h5>Please Wait While We Are Processing Your Request</h5>
     </div>

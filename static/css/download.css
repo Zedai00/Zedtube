@@ -84,14 +84,13 @@ select {
 }
 
 .done {
-    padding-top: 31.2vh;
-    padding-bottom: 36.1vh;
-    color: white;
+    padding-top: 38.2vh;
+    padding-bottom: 29.8vh;
 }
 
 @media (min-width:768px) {
     .done {
-        padding-top: 36.2vh !important;
-        padding-bottom: 35.6vh !important;
+        padding-top: 43.2vh !important;
+        padding-bottom: 29.2vh !important;
     }
 }
