@@ -1,21 +1,46 @@
 .download {
-    padding-top: 31.2vh;
-    padding-bottom: 40.2vh;
-    color: white;
+    padding-top: 42.2vh;
+    padding-bottom: 17.4vh;
 }
 
 @media (min-width:768px) {
     .download {
-        padding-top: 36.2vh !important;
-        padding-bottom: 35.2vh !important;
+        padding-top: 40.4vh !important;
+        padding-bottom: 19.2vh !important;
     }
 }
 
+@media (max-width:406px) {
+    .download {
+        padding-top: 85%;
+        width: fit-content;
+        padding-bottom: 19.2vh !important;
+    }
+}
+
+select {
+    background: #113050;
+    word-wrap: normal;
+    height: 40px;
+    width: 200px;
+    margin: 20px 10px 1px 10px;
+    color: white;
+}
+
+::placeholder {
+    color: white;
+    opacity: 1;
+}
+
+#htitle {
+    color: #ffffffdb;
+    margin-top: -81px;
+    font-size: 61px;
+}
+
 #url {
-    /* height: 100px;
-    width: 100px; */
-    color: rgb(0, 0, 0);
-    background-color: white;
+    color: white;
+    background-color: #236162;
     text-align: center;
     border: white !important;
     border-radius: 10px;
@@ -23,10 +48,17 @@
     padding: 10px;
 }
 
+#format {
+    border-radius: 5px;
+    background: #236162;
+    border: none;
+}
+
 #down {
     margin-top: 20px;
-    background-color: rgb(17, 48, 80);
-    color: white;
+    border-radius: 10px;
+    background: #236162;
+    border: none;
 }
 
 #loading {

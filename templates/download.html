@@ -3,17 +3,9 @@
 Download
 {% endblock %}
 {% block main %}
-<style>
-    select {
-    background: #113050;
-    word-wrap: normal;
-    height: 40px;
-    width: 200px;
-    margin: 20px 10px 1px 10px;
-    color: white;
-}
-</style>
-<header class="download masthead bg-primary text-white text-center">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/download.css') }}">
+<header id="header" class="download masthead bg-primary text-white text-center">
+    <h1 id="htitle">DOWNLOAD</h1>
     <div class="container d-flex align-items-center flex-column">
         <form action="/download" method="POST">
             <div id="link">

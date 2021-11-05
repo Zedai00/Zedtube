@@ -3,8 +3,8 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-        <meta name="description" content="">
-        <meta name="author" content="">
+        <meta name="description" content="Zedtube Allows you to donwload videos from online site and convert them to your specified formats">
+        <meta name="author" content="Zed">
         <title>Zedtube: {% block title %}{% endblock %}</title>
         <!-- Font Awesome icons (free version)-->
         <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/js/all.min.js" crossorigin="anonymous"></script>
@@ -17,8 +17,6 @@
         <link rel="stylesheet" href="{{ url_for('static', filename='css/heading.css') }}">
         <!--<link rel="stylesheet" href="../static/css/body.css"> -->
         <link rel="stylesheet" href="{{ url_for('static', filename='css/body.css') }}">
-        <link rel="stylesheet" href="{{ url_for('static', filename='css/download.css') }}">
-
     </head>
     <body id="page-top">
         <nav class="navbar navbar-expand-lg bg-secondary fixed-top" id="mainNav">
@@ -38,7 +36,7 @@
         </nav>
             {% block main %}{% endblock %}
         <!-- Copyright Section-->
-        <section class="copyright py-4 text-center text-white">
+        <section id="copyright" class="copyright py-4 text-center text-white">
             <div class="container"><small class="pre-wrap">Copyright © Zedtube 2021</small></div>
         </section>
         <!-- Scroll to Top Button (Only visible on small and extra-small screen sizes)-->
@@ -50,5 +48,6 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.min.js"></script>
         <!-- Core theme JS-->
         <script src="../static/scripts.js"></script>
+        <script src="../static/custom.js"></script>
     </body>
 </html>

@@ -54,6 +54,11 @@ def done():
     p = os.getcwd()
     return send_from_directory(p, name, as_attachment=True)
 
+@app.route("/waiting", methods=["GET", "POST"])
+def waiting():
+    if request.method == "GET":
+        return render_template("waiting.html")
+
 
 @app.route("/download", methods=["POST", "GET"])
 def download():
@@ -72,16 +77,14 @@ def download():
 def convert():
     if request.method == "GET":
         return render_template("convert.html", formats=formats)
-    if not request.files["file"]:
-        error = "Please Choose A File To Upload"
-        return render_template("convert.html", error=error)
-    file = request.files["file"]
+    files = request.files
+    file = request.files["file[0]"]
     format = request.form.get("format")
     file.save(os.path.join(os.getcwd(), file.filename))
     session["file"] = file.filename
     session["format"] = format
     r = request.path
-    return render_template("waiting.html", r=r)
+    return "ok"
 
 
 @app.route("/converter")
