@@ -1,0 +1,40 @@
+.dropzone {
+    background-color: #2a8385;
+    border-radius: 10%;
+}
+
+.form-control {
+    border: unset;
+}
+
+.download {
+    padding-top: 33.5vh !important;
+    padding-bottom: 28.4vh !important;
+}
+
+@media (min-width:768px) {
+    .download {
+        padding-top: 39.5vh !important;
+        padding-bottom: 22.4vh !important;
+    }
+
+}
+
+#format {
+    background: #2a8385;
+    border: #2c3e50;
+    color: white;
+}
+
+#submit {
+    border-radius: unset;
+    background: #2a8385;
+    border: #2c3e50;
+    color: white;
+}
+
+#htitle {
+    color: #ffffffdb;
+    margin-top: -81px;
+    font-size: 61px;
+}

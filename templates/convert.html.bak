@@ -1,0 +1,51 @@
+{% extends "layout.html" %}
+{% block title %}
+Convert
+{% endblock %}
+{% block main %}
+<style>
+    input[type=file]::file-selector-button {
+    background-color: #2c3e50;
+    padding: 1px;
+    }
+    .form-control {
+        border: unset;
+    }
+    .download {
+    padding-top: 39.5vh !important;
+    padding-bottom: 40.2vh !important;
+    }
+
+    @media (min-width:768px) {
+        .download {
+    padding-top: 44.5vh !important;
+    padding-bottom: 35.2vh !important;
+    }
+    
+    }
+</style>
+<header class="download masthead bg-primary text-white text-center">
+    <div class="container d-flex align-items-center flex-column">
+        <!-- upload a file -->
+        <form action="/convert" method="post" enctype="multipart/form-data">
+            <div class="input-group mb-3">
+            <input style="padding: 0.25rem .1rem;background: #2c3e50;color: white;border-radius: unset;padding: 5px 0px 0px 6px;"
+                name="file" type="file" class="form-control" id="inputGroupFile02" accept="video/mp4,video/x-m4v,video/*"
+                required="">
+                <select name="format" id="format" required="" style="
+            background: #2c3e50;
+            border: #2c3e50;
+            color: white;
+        ">
+                    <option hidden selected disabled value="">Extension</option>
+                    {% for i in formats %}
+                    <option value="{{ i }}">{{ i }}</option>
+                    {% endfor %}
+                </select>
+                <input class="input-group-text" type="submit" value="Upload" for="inputGroupFile02"
+                    style="border-radius: unset;background: #2c3e50;border: #2c3e50;color: white;">
+            </div>
+        </form>
+    </div>
+</header>
+{% endblock %}
