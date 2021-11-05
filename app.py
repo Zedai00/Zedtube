@@ -54,6 +54,7 @@ def done():
     p = os.getcwd()
     return send_from_directory(p, name, as_attachment=True)
 
+
 @app.route("/waiting", methods=["GET", "POST"])
 def waiting():
     if request.method == "GET":
@@ -98,7 +99,7 @@ def converter():
         format = session["format"].lower()
     else:
         format = file.split(".")[1]
-    ffmpeg = f"ffmpeg -i {file} -preset ultrafast {outputfile}.{format}"
+    ffmpeg = f"ffmpeg -i {file} {outputfile}.{format}"
     session["name"] = f"{session['file'].split('.')[0]}.{format}"
     args = shlex.split(ffmpeg)
     subprocess.call(args)
@@ -108,29 +109,29 @@ def converter():
 @app.route("/process")
 def process():
     url = session["url"]
-    format = session["format"]
-    if format:
-        try: 
-            format = format.lower()
-            command_line = f"youtube-dl {url} --merge-output-format {format}"
-            subprocess.call(shlex.split(command_line))
-            command_line = f"youtube-dl {url} --get-filename --merge-output-format {format} --skip-download"
-            title = subprocess.check_output(shlex.split(command_line)).decode("utf-8").strip()
-        except :
-            args = shlex.split("yotube-dl --rm-cache-dir")
+    format = session["format"].lower()
+    try:
+        command_line = f"youtube-dl {url}"
+        subprocess.call(shlex.split(command_line))
+        command_line = f"youtube-dl {url} --get-filename"
+        title = subprocess.check_output(
+            shlex.split(command_line)).decode("utf-8").strip()
+        if format:
+            file = title
+            file = re.escape(file)
+            file = file.replace("'", "\\'")
+            file = file.replace('"', '\\"')
+            outputfile = file.split(".")[0]
+            ffmpeg = f"ffmpeg -i {file} {outputfile}.{format}"
+            args = shlex.split(ffmpeg)
             subprocess.call(args)
-            process()
-    else:
-        try: 
-            command_line = f"youtube-dl {url}"
-            subprocess.call(shlex.split(command_line))
-            command_line = f"youtube-dl {url} --get-filename"
-            title = subprocess.check_output(shlex.split(command_line)).decode("utf-8").strip()
-        except:
-            args = shlex.split("yotube-dl --rm-cache-dir")
-            subprocess.call(args)
-            process()
-    session["name"] = title
+            session["name"] = f"{title.split('.')[0]}.{format}"
+        else:
+            session["name"] = title
+    except:
+        args = shlex.split("yotube-dl --rm-cache-dir")
+        subprocess.call(args)
+        process()
     return title
 
 
