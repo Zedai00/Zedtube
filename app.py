@@ -25,6 +25,13 @@ app.config["SESSION_TYPE"] = "filesystem"
 app.config["SESSION_PERMANENT"] = False
 app.config["secret_key"] = os.getenv("SECRET_KEY")
 Session(app)
+socketio = SocketIO(app)
+
+
+@socketio.on("connect")
+def connect():
+    print("Client connected")
+    socketio.emit("connected", "Connected")
 
 
 pwd = os.path.dirname(os.path.abspath(__file__))
@@ -113,7 +120,12 @@ def process():
     format = session["format"].lower()
     try:
         command_line = f"youtube-dl {url}"
-        subprocess.call(shlex.split(command_line))
+        p = subprocess.Popen(shlex.split(command_line), stdout=subprocess.PIPE)
+        while True:
+            line = p.stdout.readline()
+            if not line:
+                break
+            socketio.emit("update", line.decode("utf-8"))
         command_line = f"youtube-dl {url} --get-filename"
         title = subprocess.check_output(
             shlex.split(command_line)).decode("utf-8").strip()
@@ -180,3 +192,7 @@ def webhook():
     args = shlex.split(command_line)
     subprocess.Popen(args, cwd=pwd)
     return "okay"
+
+
+if __name__ == "__main__":
+    socketio.run(app)
