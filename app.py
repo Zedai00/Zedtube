@@ -17,6 +17,7 @@ from flask import (
 )
 from flask_session import Session
 from werkzeug.exceptions import HTTPException, InternalServerError, default_exceptions
+f
 
 app = Flask(__name__)
 app.config["SESSION_FILE_DIR"] = mkdtemp()
