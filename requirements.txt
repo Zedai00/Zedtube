@@ -19,3 +19,5 @@ typing-extensions==3.10.0.2
 Werkzeug==2.0.2
 youtube-dl==2021.6.6
 flask-socketio
+eventlet
+gevent-websocket
