@@ -4,11 +4,11 @@ import atexit
 import os
 import re
 import shlex
-from socket import socket
 import subprocess
 import json
 from threading import Thread
 import time
+from unicodedata import name
 import youtube_dl
 from tempfile import mkdtemp
 from flask import (
@@ -119,6 +119,16 @@ def converter():
     return redirect(url_for("done"))
 
 
+def my_hook(d):
+    if d['status'] == 'finished':
+        file_tuple = os.path.split(os.path.abspath(d['filename']))
+        print("Done downloading {}".format(file_tuple[1]))
+    if d['status'] == 'downloading':
+        print(d['filename'], d['_percent_str'], d['_eta_str'])
+        percent = round(int(d['_percent_str'].split(".")[0]))
+        socketio.emit("update", percent)
+
+
 def progress_reader(procs, q):
     while True:
         if procs.poll() is not None:
@@ -135,18 +145,9 @@ def progress_reader(procs, q):
 
         # Look for "frame=xx"
         if progress_text.startswith("frame="):
-            frame = int(progress_text.partition('=')[-1])  # Get the frame number
+            frame = int(progress_text.partition(
+                '=')[-1])  # Get the frame number
             q[0] = frame  # Store the last sample
-
-
-def my_hook(d):
-    if d['status'] == 'finished':
-        file_tuple = os.path.split(os.path.abspath(d['filename']))
-        print("Done downloading {}".format(file_tuple[1]))
-    if d['status'] == 'downloading':
-        print(d['filename'], d['_percent_str'], d['_eta_str'])
-        percent = round(int(d['_percent_str'].split(".")[0]))
-        socketio.emit("update", percent)
 
 
 @app.route("/process")
@@ -163,6 +164,7 @@ def process():
         title = subprocess.check_output(
             shlex.split(command_line)).decode("utf-8").strip()
         if format:
+            socketio.emit("mode", "convert")
             file = title
             file = re.escape(file)
             file = file.replace("'", "\\'")
@@ -174,13 +176,15 @@ def process():
             dict = json.loads(data)
             # Get the total number of frames.
             tot_n_frames = float(dict['streams'][0]['nb_read_packets'])
-            ffmpeg = f"ffmpeg -y -i {file} -strict -2 {outputfile}.{format} "
-            process = subprocess.Popen(
-                shlex.split(ffmpeg), stdout=subprocess.PIPE)
+            cmd = shlex.split(
+                f'ffmpeg -y -loglevel error -i {file} -strict -2 -progress pipe:1 {outputfile}.{format}')
+            process = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+
             q = [0]  # We don't really need to use a Queue - use a list of of size 1
             progress_reader_thread = Thread(target=progress_reader, args=(
                 process, q))  # Initialize progress reader thread
             progress_reader_thread.start()  # Start the thread
+
             while True:
                 if process.poll() is not None:
                     break  # Break if FFmpeg sun-process is closed
@@ -190,9 +194,9 @@ def process():
                 # Read last element from progress_reader - current encoded frame
                 n_frame = q[0]
                 progress_percent = (n_frame/tot_n_frames)*100   # Convert to percentage.
-                progress_percent = round(int(progress_percent.split(".")[0]))
+                progress_percent = round(progress_percent)
+                print(f"Progress: {progress_percent}%")
                 socketio.emit("update", progress_percent)
-                print(f'Progress [%]: {progress_percent:.2f}')  # Print the progress
             process.stdout.close()          # Close stdin pipe.
             progress_reader_thread.join()   # Join thread
             process.wait()                  # Wait for FFmpeg sub-process to finish
@@ -200,7 +204,7 @@ def process():
         else:
             session["name"] = title
     except:
-        args = shlex.split("yotube-dl --rm-cache-dir")
+        args = shlex.split("youtube-dl --rm-cache-dir")
         subprocess.call(args)
         process()
     return title
