@@ -9,7 +9,7 @@ import subprocess
 import json
 from threading import Thread
 import time
-
+import youtube_dl
 from tempfile import mkdtemp
 from flask import (
     Flask,
@@ -139,33 +139,41 @@ def progress_reader(procs, q):
             q[0] = frame  # Store the last sample
 
 
+def my_hook(d):
+    if d['status'] == 'finished':
+        file_tuple = os.path.split(os.path.abspath(d['filename']))
+        print("Done downloading {}".format(file_tuple[1]))
+    if d['status'] == 'downloading':
+        print(d['filename'], d['_percent_str'], d['_eta_str'])
+        percent = round(int(d['_percent_str'].split(".")[0]))
+        socketio.emit("update", percent)
+
+
 @app.route("/process")
 def process():
     url = session["url"]
     format = session["format"].lower()
     try:
-        command_line = f"youtube-dl {url}"
-        p = subprocess.Popen(shlex.split(command_line), stdout=subprocess.PIPE)
-        while True:
-            line = p.stdout.readline()
-            if not line:
-                break
-            socketio.emit("update", line.decode("utf-8"))
+        ydl_opts = {
+            'progress_hooks': [my_hook],
+        }
+        with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+            ydl.download([url])
         command_line = f"youtube-dl {url} --get-filename"
         title = subprocess.check_output(
             shlex.split(command_line)).decode("utf-8").strip()
         if format:
-            data = subprocess.run(shlex.split(
-                f'ffprobe -v error -select_streams v:0 -count_packets -show_entries stream=nb_read_packets -of csv=p=0 -of json {title}'), stdout=subprocess.PIPE).stdout
-            # Convert data from JSON string to dictionary
-            dict = json.loads(data)
-            # Get the total number of frames.
-            tot_n_frames = float(dict['streams'][0]['nb_read_packets'])
             file = title
             file = re.escape(file)
             file = file.replace("'", "\\'")
             file = file.replace('"', '\\"')
             outputfile = file.split(".")[0]
+            data = subprocess.run(shlex.split(
+                f'ffprobe -v error -select_streams v:0 -count_packets -show_entries stream=nb_read_packets -of csv=p=0 -of json {file}'), stdout=subprocess.PIPE).stdout
+            # Convert data from JSON string to dictionary
+            dict = json.loads(data)
+            # Get the total number of frames.
+            tot_n_frames = float(dict['streams'][0]['nb_read_packets'])
             ffmpeg = f"ffmpeg -y -i {file} -strict -2 {outputfile}.{format} "
             process = subprocess.Popen(
                 shlex.split(ffmpeg), stdout=subprocess.PIPE)
