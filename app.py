@@ -4,7 +4,12 @@ import atexit
 import os
 import re
 import shlex
+from socket import socket
 import subprocess
+import json
+from threading import Thread
+import time
+
 from tempfile import mkdtemp
 from flask import (
     Flask,
@@ -114,6 +119,26 @@ def converter():
     return redirect(url_for("done"))
 
 
+def progress_reader(procs, q):
+    while True:
+        if procs.poll() is not None:
+            break  # Break if FFmpeg sun-process is closed
+
+        progress_text = procs.stdout.readline()  # Read line from the pipe
+
+        # Break the loop if progress_text is None (when pipe is closed).
+        if progress_text is None:
+            break
+
+        progress_text = progress_text.decode(
+            "utf-8")  # Convert bytes array to strings
+
+        # Look for "frame=xx"
+        if progress_text.startswith("frame="):
+            frame = int(progress_text.partition('=')[-1])  # Get the frame number
+            q[0] = frame  # Store the last sample
+
+
 @app.route("/process")
 def process():
     url = session["url"]
@@ -130,14 +155,39 @@ def process():
         title = subprocess.check_output(
             shlex.split(command_line)).decode("utf-8").strip()
         if format:
+            data = subprocess.run(shlex.split(
+                f'ffprobe -v error -select_streams v:0 -count_packets -show_entries stream=nb_read_packets -of csv=p=0 -of json {title}'), stdout=subprocess.PIPE).stdout
+            # Convert data from JSON string to dictionary
+            dict = json.loads(data)
+            # Get the total number of frames.
+            tot_n_frames = float(dict['streams'][0]['nb_read_packets'])
             file = title
             file = re.escape(file)
             file = file.replace("'", "\\'")
             file = file.replace('"', '\\"')
             outputfile = file.split(".")[0]
             ffmpeg = f"ffmpeg -y -i {file} -strict -2 {outputfile}.{format} "
-            args = shlex.split(ffmpeg)
-            subprocess.call(args)
+            process = subprocess.Popen(
+                shlex.split(ffmpeg), stdout=subprocess.PIPE)
+            q = [0]  # We don't really need to use a Queue - use a list of of size 1
+            progress_reader_thread = Thread(target=progress_reader, args=(
+                process, q))  # Initialize progress reader thread
+            progress_reader_thread.start()  # Start the thread
+            while True:
+                if process.poll() is not None:
+                    break  # Break if FFmpeg sun-process is closed
+
+                time.sleep(1)  # Sleep 1 second (do some work...)
+
+                # Read last element from progress_reader - current encoded frame
+                n_frame = q[0]
+                progress_percent = (n_frame/tot_n_frames)*100   # Convert to percentage.
+                progress_percent = round(int(progress_percent.split(".")[0]))
+                socketio.emit("update", progress_percent)
+                print(f'Progress [%]: {progress_percent:.2f}')  # Print the progress
+            process.stdout.close()          # Close stdin pipe.
+            progress_reader_thread.join()   # Join thread
+            process.wait()                  # Wait for FFmpeg sub-process to finish
             session["name"] = f"{title.split('.')[0]}.{format}"
         else:
             session["name"] = title

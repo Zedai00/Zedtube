@@ -6,14 +6,31 @@ wait
 <link rel="stylesheet" href="{{ url_for('static', filename='css/download.css') }}">
 <div class="download" id="loading">
     <div id="wait">
-        <h5>Please Wait While We Are Processing Your Request</h5>
+        <h5 id="title">Please Wait While We Are Processing Your Request</h5>
     </div>
-    <div class="spinner-border" style="width: 3rem; height: 3rem;" role="status">
-        <span class="sr-only">Loading...</span>
+    <div class="progress">
+        <div class="progress-bar" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0"
+            aria-valuemax="100"></div>
     </div>
+    <h6 id="percent">0%</h6>
 </div>
 {% if r == "/download" %}
+<script src="https://cdn.socket.io/4.3.2/socket.io.min.js"
+    integrity="sha384-KAZ4DtjNhLChOB/hxXuKqhMLYvx3b5MlT55xPEiNmREKRzeEm+RVPlTnAn0ajQNs"
+    crossorigin="anonymous"></script>
 <script type="text/javascript">
+    var socket = io();
+    socket.on('connect', function() {
+        console.log('connected');
+    } )
+    socket.on('update', function(progress) {
+        console.log(progress);
+        document.getElementById('percent').innerHTML = progress + "%";
+        document.getElementById('title').innerHTML = "Downloading Your Video On Our Servers";
+        let bar = document.getElementsByClassName('progress-bar')[0];
+        bar.style.width = progress + "%";
+        bar.setAttribute('aria-valuenow', progress);
+    });
     function navigate() {
         window.location.href = 'done';  // redirect when done!
     }
