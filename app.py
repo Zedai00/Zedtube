@@ -71,7 +71,8 @@ def done():
 @app.route("/waiting", methods=["GET", "POST"])
 def waiting():
     if request.method == "GET":
-        return render_template("waiting.html")
+        r = request.path
+        return render_template("waiting.html", r=r)
 
 
 @app.route("/download", methods=["POST", "GET"])
@@ -101,22 +102,6 @@ def convert():
     return "ok"
 
 
-@app.route("/converter")
-def converter():
-    file = session["file"]
-    file = re.escape(file)
-    file = file.replace("'", "\\'")
-    file = file.replace('"', '\\"')
-    outputfile = file.split(".")[0]
-    if session["format"]:
-        format = session["format"].lower()
-    else:
-        format = file.split(".")[1]
-    ffmpeg = f"ffmpeg -y -i {file} -strict -2 {outputfile}.{format}"
-    session["name"] = f"{session['file'].split('.')[0]}.{format}"
-    args = shlex.split(ffmpeg)
-    subprocess.call(args)
-    return redirect(url_for("done"))
 
 
 def my_hook(d):
@@ -149,6 +134,49 @@ def progress_reader(procs, q):
                 '=')[-1])  # Get the frame number
             q[0] = frame  # Store the last sample
 
+
+@app.route("/converter")
+def converter():
+    file = session["file"]
+    file = re.escape(file)
+    file = file.replace("'", "\\'")
+    file = file.replace('"', '\\"')
+    outputfile = file.split(".")[0]
+    if session["format"]:
+        format = session["format"].lower()
+    else:
+        format = file.split(".")[1]
+    data = subprocess.run(shlex.split(
+        f'ffprobe -v error -select_streams v:0 -count_packets -show_entries stream=nb_read_packets -of csv=p=0 -of json {file}'), stdout=subprocess.PIPE).stdout
+    # Convert data from JSON string to dictionary
+    dict = json.loads(data)
+    # Get the total number of frames.
+    tot_n_frames = float(dict['streams'][0]['nb_read_packets'])
+    cmd = shlex.split(
+        f'ffmpeg -y -loglevel error -i {file} -strict -2 -progress pipe:1 {outputfile}.{format}')
+    process = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+    q = [0]  # We don't really need to use a Queue - use a list of of size 1
+    progress_reader_thread = Thread(target=progress_reader, args=(
+        process, q))  # Initialize progress reader thread
+    progress_reader_thread.start()  # Start the thread
+    while True:
+                if process.poll() is not None:
+                    break  # Break if FFmpeg sun-process is closed
+
+                time.sleep(1)  # Sleep 1 second (do some work...)
+
+                # Read last element from progress_reader - current encoded frame
+                n_frame = q[0]
+                # Convert to percentage.
+                progress_percent = (n_frame/tot_n_frames)*100
+                progress_percent = round(progress_percent)
+                print(f"Progress: {progress_percent}%")
+                socketio.emit("update", progress_percent)
+    process.stdout.close()          # Close stdin pipe.
+    progress_reader_thread.join()   # Join thread
+    process.wait()                  # Wait for FFmpeg sub-process to finish
+    session["name"] = f"{session['file'].split('.')[0]}.{format}"
+    return redirect(url_for("done"))
 
 @app.route("/process")
 def process():

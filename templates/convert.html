@@ -31,7 +31,7 @@ Convert
         autoProcessQueue: false,
         uploadMultiple: true,
         parallelUploads: 100,
-        maxFiles: 100,
+        maxFiles: 1,
 
         // The setting up of the dropzone
         init: function () {
@@ -51,7 +51,7 @@ Convert
                 // wait 5 seconds
                 setTimeout(function () {
                     window.location.href = "/waiting"
-                }, 5000);
+                }, 3000);
             });
         }
     }
