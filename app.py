@@ -176,12 +176,11 @@ def down(url, format):
                     progress_percent = round(progress_percent)
                     print(f"Progress: {progress_percent}%")
                     socketio.emit("update", progress_percent)
+                    session["title"] = title
                 process.stdout.close()          # Close stdin pipe.
                 progress_reader_thread.join()   # Join thread
                 process.wait()                  # Wait for FFmpeg sub-process to finish
-                session["name"] = f"{title.split('.')[0]}.{format}"
                 socketio.emit("complete", 'done')
-                return redirect(url_for("done"))
             else:
                 session["name"] = title
                 socketio.emit("complete", 'done')
@@ -243,18 +242,17 @@ def converter():
     process.wait()                  # Wait for FFmpeg sub-process to finish
     session["name"] = f"{session['file'].split('.')[0]}.{format}"
     socketio.emit("complete", 'done')
-    return redirect(url_for("done"))
 
 
 @app.route("/done", methods=["GET", "POST"])
 def done():
     if request.method == "GET":
-        if not session["name"]:
+        if not session["title"]:
             return redirect(
                 url_for("error", text="Please Enter a Valid Link", code=403)
             )
         return render_template("done.html")
-    name = session["name"]
+    name = session["title"]
     p = os.getcwd()
     return send_from_directory(p, name, as_attachment=True)
 
