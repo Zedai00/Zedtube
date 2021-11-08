@@ -8,6 +8,7 @@ import subprocess
 import json
 from threading import Thread
 import time
+import glob
 import youtube_dl
 from tempfile import mkdtemp
 from flask import (
@@ -129,6 +130,9 @@ def down(url, format):
                 title = ydl.prepare_filename(info)
                 ydl.download([url])
             title = subprocess.check_output(shlex.split(f"youtube-dl {url} --get-filename")).decode("utf-8").strip()
+            title = title.split(".")[0]
+            for file in glob.glob(f"{title}.*"):
+                title = file
             if format:
                 socketio.emit("mode", 'converter')
                 file = title
