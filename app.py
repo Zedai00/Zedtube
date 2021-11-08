@@ -190,9 +190,11 @@ def process():
         command_line = f"youtube-dl {url} --get-filename"
         title = subprocess.check_output(
             shlex.split(command_line)).decode("utf-8").strip()
+        print(title)
         if format:
+            print(format)
             socketio.emit("mode", "convert")
-            time.sleep(1)
+            print("format1")
             file = title
             file = re.escape(file)
             file = file.replace("'", "\\'")
@@ -240,6 +242,7 @@ def process():
 @socketio.on('ping')
 def ping(ping):
     while True:
+        print(ping)
         socketio.emit("ping", ping)
 
 @app.route("/error")
