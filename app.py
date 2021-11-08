@@ -182,6 +182,7 @@ def process():
     url = session["url"]
     format = session["format"].lower()
     try:
+        subprocess.call(shlex.spilt("youtube-dl --rm-cache-dir"))
         ydl_opts = {
             'progress_hooks': [my_hook],
             'outmpl': '%(title)s'+'.mkv'
