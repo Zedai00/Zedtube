@@ -237,6 +237,7 @@ def process():
             session["name"] = title
     except Exception as e:
         print(e)
+        pass
     return title
 
 
