@@ -34,7 +34,7 @@ wait
     })
     socket.on('update', function (progress) {
         if (progress == 100) {
-            $('.progress-bar').hide();
+            $('.progress-bar').attr('hidden', 'hidden')
             $('#percent').hide();
             $('#title').text('Completing The Process Kindly Pleas Wait');
             $('.spinner-border').removeAttr('hidden');

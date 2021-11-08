@@ -180,9 +180,11 @@ def down(url, format):
                 progress_reader_thread.join()   # Join thread
                 process.wait()                  # Wait for FFmpeg sub-process to finish
                 session["name"] = f"{title.split('.')[0]}.{format}"
+                socketio.emit("complete", 'done')
                 return redirect(url_for("done"))
             else:
                 session["name"] = title
+                socketio.emit("complete", 'done')
                 return title
         except:
             subprocess.call(shlex.split("youtube-dl --rm-cache-dir"))
