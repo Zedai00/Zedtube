@@ -177,16 +177,17 @@ def converter():
     return redirect(url_for("done"))
 
 def down(url):
-    ydl_opts = {
-        'progress_hooks': [my_hook],
-        'outmpl': '%(title)s'+'.mkv'
-    }
-    with youtube_dl.YoutubeDL(ydl_opts) as ydl:
-        ydl._ies = [ydl.get_info_extractor('Youtube')]
-        info = ydl.extract_info(url, download=False)
-        title = ydl.prepare_filename(info)
-        ydl.download([url])
-        session["name"] = title
+    with app.test_request_context():
+        ydl_opts = {
+            'progress_hooks': [my_hook],
+            'outmpl': '%(title)s'+'.mkv'
+        }
+        with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+            ydl._ies = [ydl.get_info_extractor('Youtube')]
+            info = ydl.extract_info(url, download=False)
+            title = ydl.prepare_filename(info)
+            ydl.download([url])
+            session["name"] = title
 
 @app.route("/process")
 def process():
