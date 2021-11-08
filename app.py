@@ -232,12 +232,15 @@ def process():
         else:
             session["name"] = title
     except:
-        print(e)
         args = shlex.split("youtube-dl --rm-cache-dir")
         subprocess.call(args)
         process()
     return title
 
+@socketio.on('ping')
+def ping():
+    print(ping)
+    socketio.emit('ping', 'ping')
 
 @app.route("/error")
 def error():

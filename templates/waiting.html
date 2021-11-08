@@ -28,6 +28,12 @@ wait
     var socket = io();
     socket.on('connect', function () {
         console.log('connected');
+        setInterval(() => {
+            socket.emit('ping', 'ping')
+        }, 1000);
+    })
+    socket.on('ping', function (ping) {
+        socket.emit('ping', ping)
     })
     socket.on('update', function (progress) {
         if (progress == 100) {
