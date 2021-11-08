@@ -247,6 +247,7 @@ def default_error_handler(e):
 @socketio.on('ping')
 def ping(ping):
     while True:
+        time.sleep(10)
         print(ping)
         socketio.emit("ping", ping)
 
