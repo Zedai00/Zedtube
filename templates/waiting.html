@@ -30,7 +30,7 @@ wait
         console.log('connected');
         setInterval(() => {
             socket.emit('ping', 'ping')
-        }, 1000);
+        }, 10000);
     })
     socket.on('ping', function (ping) {
         socket.emit('ping', ping)

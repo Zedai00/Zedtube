@@ -238,7 +238,7 @@ def process():
     return title
 
 @socketio.on('ping')
-def ping():
+def ping(ping):
     print(ping)
     socketio.emit('ping', 'ping')
 
