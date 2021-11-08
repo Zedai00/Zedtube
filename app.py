@@ -259,7 +259,7 @@ def done():
 @socketio.on('ping')
 def ping(ping):
     while True:
-        time.sleep(30)
+        time.sleep(50)
         print(ping)
         socketio.emit("ping", ping)
 

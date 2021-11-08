@@ -32,7 +32,7 @@ wait
         console.log('connected');
         setInterval(() => {
             socket.emit('ping', 'ping')
-        }, 30000);
+        }, 50000);
     })
     socket.on('ping', function (ping) {
         socket.emit('ping', ping)
