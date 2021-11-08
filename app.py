@@ -240,6 +240,7 @@ def converter():
     progress_reader_thread.join()   # Join thread
     process.wait()                  # Wait for FFmpeg sub-process to finish
     session["name"] = f"{session['file'].split('.')[0]}.{format}"
+    socketio.emit("complete", 'done')
     return redirect(url_for("done"))
 
 
