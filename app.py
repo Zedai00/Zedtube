@@ -182,12 +182,12 @@ def process():
     url = session["url"]
     format = session["format"].lower()
     try:
-        subprocess.run(shlex.split("youtube-dl --rm-cache-dir"), stdout=subprocess.PIPE)
         ydl_opts = {
             'progress_hooks': [my_hook],
             'outmpl': '%(title)s'+'.mkv'
         }
         with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+            ydl._ies = [ydl.get_info_extractor('Youtube')]
             info = ydl.extract_info(url, download=False)
             title = ydl.prepare_filename(info)
             ydl.download([url])
@@ -233,8 +233,10 @@ def process():
             progress_reader_thread.join()   # Join thread
             process.wait()                  # Wait for FFmpeg sub-process to finish
             session["name"] = f"{title.split('.')[0]}.{format}"
+            return title
         else:
             session["name"] = title
+            return title
     except Exception as e:
         print(e)
         pass
