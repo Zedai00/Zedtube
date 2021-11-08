@@ -239,8 +239,8 @@ def process():
 
 @socketio.on('ping')
 def ping(ping):
-    print(ping)
-    socketio.emit('ping', 'ping')
+    while True:
+        socketio.emit("ping", ping)
 
 @app.route("/error")
 def error():
