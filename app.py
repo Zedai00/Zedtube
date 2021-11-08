@@ -8,7 +8,6 @@ import subprocess
 import json
 from threading import Thread
 import time
-from unicodedata import name
 import youtube_dl
 from tempfile import mkdtemp
 from flask import (
@@ -193,6 +192,7 @@ def process():
             shlex.split(command_line)).decode("utf-8").strip()
         if format:
             socketio.emit("mode", "convert")
+            time.sleep(1)
             file = title
             file = re.escape(file)
             file = file.replace("'", "\\'")
@@ -232,6 +232,7 @@ def process():
         else:
             session["name"] = title
     except:
+        print(e)
         args = shlex.split("youtube-dl --rm-cache-dir")
         subprocess.call(args)
         process()
