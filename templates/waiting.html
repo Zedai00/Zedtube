@@ -25,6 +25,7 @@ wait
     integrity="sha384-KAZ4DtjNhLChOB/hxXuKqhMLYvx3b5MlT55xPEiNmREKRzeEm+RVPlTnAn0ajQNs"
     crossorigin="anonymous"></script>
 <script type="text/javascript">
+    let p = 0;
     $('#comp').hide();
     var socket = io();
     socket.on('connect', function () {
@@ -42,6 +43,9 @@ wait
             $('#percent').hide();
             $('#title').hide();
             $('#comp').show();
+            if (p == 1) {
+                window.location.href = "{{ url_for(done) }}";
+            }
         }
         else
         {
@@ -65,10 +69,7 @@ wait
         $('#title').show();
         document.getElementById('title').innerHTML = "We Are Converting Your Video To Your Selected Format";
         console.log(mode);
-        if (progress == 100) {
-            // redirect to done
-            window.location.href = "/done";
-        }
+        p += 1;
     })
     fetch('process');
     $(window).on('load', function () {
