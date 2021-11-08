@@ -8,12 +8,12 @@ wait
     <div id="wait">
         <div id="comp" style="display: flex;">
             <h5>Completing The Process Please Wait</h5>
-            <div class="spinner-border" style="width: 3rem; height: 3rem;" role="status">
+            <div class="spinner-border" style="width: 3rem;height: 3rem;margin-left: auto;margin-right: auto;display: block;" role="status">
                 <span class="sr-only">Loading...</span>
             </div>
         </div>
-        <h5 id="title">Please Wait While We Are Downloading Your Video On Our Servers</h5>
         <div class="progress">
+            <h5 id="title">Please Wait While We Are Downloading Your Video On Our Servers</h5>
             <div class="progress-bar" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0"
                 aria-valuemax="100"></div>
         </div>
@@ -65,11 +65,12 @@ wait
         $('#title').show();
         document.getElementById('title').innerHTML = "We Are Converting Your Video To Your Selected Format";
         console.log(mode);
+        if (progress == 100) {
+            // redirect to done
+            window.location.href = "/done";
+        }
     })
-    function navigate() {
-        window.location.href = 'done';  // redirect when done!
-    }
-    fetch('process').then(navigate);
+    fetch('process');
     $(window).on('load', function () {
         $('#loading').show();
     })

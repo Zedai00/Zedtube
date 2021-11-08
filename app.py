@@ -48,23 +48,8 @@ with open("formats.txt", "r") as file:
 @app.route("/")
 def index():
     session.clear()
-    p = os.getcwd()
-    print(p)
     session["name"] = None
     return render_template("index.html")
-
-
-@app.route("/done", methods=["GET", "POST"])
-def done():
-    if request.method == "GET":
-        if not session["name"]:
-            return redirect(
-                url_for("error", text="Please Enter a Valid Link", code=403)
-            )
-        return render_template("done.html")
-    name = session["name"]
-    p = os.getcwd()
-    return send_from_directory(p, name, as_attachment=True)
 
 
 @app.route("/waiting", methods=["GET", "POST"])
@@ -101,8 +86,6 @@ def convert():
     return "ok"
 
 
-
-
 def my_hook(d):
     if d['status'] == 'finished':
         file_tuple = os.path.split(os.path.abspath(d['filename']))
@@ -133,6 +116,85 @@ def progress_reader(procs, q):
                 '=')[-1])  # Get the frame number
             q[0] = frame  # Store the last sample
 
+
+def down(url, format):
+    with app.test_request_context():
+        try:
+            ydl_opts = {
+                'progress_hooks': [my_hook],
+            }
+            with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+                ydl._ies = [ydl.get_info_extractor('Youtube')]
+                info = ydl.extract_info(url, download=False)
+                title = ydl.prepare_filename(info)
+                ydl.download([url])
+            title = subprocess.check_output(shlex.split(f"youtube-dl {url} --get-filename")).decode("utf-8").strip()
+            if format:
+                socketio.emit("mode", 'converter')
+                file = title
+                print('format1')
+                file = re.escape(file)
+                print('format1')
+                file = file.replace("'", "\\'")
+                print('format1')
+                file = file.replace('"', '\\"')
+                print('format1')
+                outputfile = file.split(".")[0]
+                print('format1')
+                data = subprocess.run(shlex.split(
+                    f'ffprobe -v error -select_streams v:0 -count_packets -show_entries stream=nb_read_packets -of csv=p=0 -of json {file}'), stdout=subprocess.PIPE).stdout
+                print('format1')
+                # Convert data from JSON string to dictionary
+                dict = json.loads(data)
+                print('format1')
+                # Get the total number of frames.
+                tot_n_frames = float(dict['streams'][0]['nb_read_packets'])
+                print('format1')
+                cmd = shlex.split(
+                    f'ffmpeg -y -loglevel error -i {file} -strict -2 -progress pipe:1 {outputfile}.{format}')
+                process = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+
+                q = [0]  # We don't really need to use a Queue - use a list of of size 1
+                progress_reader_thread = Thread(target=progress_reader, args=(
+                    process, q))  # Initialize progress reader thread
+                progress_reader_thread.start()  # Start the thread
+
+                while True:
+                    if process.poll() is not None:
+                        break  # Break if FFmpeg sun-process is closed
+
+                    time.sleep(1)  # Sleep 1 second (do some work...)
+
+                    # Read last element from progress_reader - current encoded frame
+                    n_frame = q[0]
+                    # Convert to percentage.
+                    progress_percent = (n_frame/tot_n_frames)*100
+                    progress_percent = round(progress_percent)
+                    print(f"Progress: {progress_percent}%")
+                    socketio.emit("update", progress_percent)
+                process.stdout.close()          # Close stdin pipe.
+                progress_reader_thread.join()   # Join thread
+                process.wait()                  # Wait for FFmpeg sub-process to finish
+                session["name"] = f"{title.split('.')[0]}.{format}"
+                return redirect(url_for("done"))
+            else:
+                session["name"] = title
+                return title
+        except:
+            subprocess.call(shlex.split("youtube-dl --rm-cache-dir"))
+            down(url, format)
+
+
+@app.route("/process")
+def process():
+    subprocess.run(shlex.split("youtube-dl --rm-cache-dir"))
+    url = session["url"]
+    format = session["format"].lower()
+    download = Thread(target=down, args=(url, format))
+    download.start()
+    return "ok"
+
+
 @app.route("/converter")
 def converter():
     file = session["file"]
@@ -158,100 +220,37 @@ def converter():
         process, q))  # Initialize progress reader thread
     progress_reader_thread.start()  # Start the thread
     while True:
-                if process.poll() is not None:
-                    break  # Break if FFmpeg sun-process is closed
+        if process.poll() is not None:
+            break  # Break if FFmpeg sun-process is closed
 
-                time.sleep(1)  # Sleep 1 second (do some work...)
+        time.sleep(1)  # Sleep 1 second (do some work...)
 
-                # Read last element from progress_reader - current encoded frame
-                n_frame = q[0]
-                # Convert to percentage.
-                progress_percent = (n_frame/tot_n_frames)*100
-                progress_percent = round(progress_percent)
-                print(f"Progress: {progress_percent}%")
-                socketio.emit("update", progress_percent)
+        # Read last element from progress_reader - current encoded frame
+        n_frame = q[0]
+        # Convert to percentage.
+        progress_percent = (n_frame/tot_n_frames)*100
+        progress_percent = round(progress_percent)
+        print(f"Progress: {progress_percent}%")
+        socketio.emit("update", progress_percent)
     process.stdout.close()          # Close stdin pipe.
     progress_reader_thread.join()   # Join thread
     process.wait()                  # Wait for FFmpeg sub-process to finish
     session["name"] = f"{session['file'].split('.')[0]}.{format}"
     return redirect(url_for("done"))
 
-def down(url):
-    with app.test_request_context():
-        ydl_opts = {
-            'progress_hooks': [my_hook],
-            'outmpl': '%(title)s'+'.mkv'
-        }
-        with youtube_dl.YoutubeDL(ydl_opts) as ydl:
-            ydl._ies = [ydl.get_info_extractor('Youtube')]
-            info = ydl.extract_info(url, download=False)
-            title = ydl.prepare_filename(info)
-            ydl.download([url])
-            session["name"] = title
 
-@app.route("/process")
-def process():
-    url = session["url"]
-    download = Thread(target=down, args=(url,))
-    download.start()
-    format = session["format"].lower()
-    title = session["name"]
-    try:
-        title = title.split('.')[0]
-        title = title+'.mkv'
-        if format:
-            print(format)
-            socketio.emit("mode", "convert")
-            print("format1")
-            file = title
-            file = re.escape(file)
-            file = file.replace("'", "\\'")
-            file = file.replace('"', '\\"')
-            outputfile = file.split(".")[0]
-            data = subprocess.run(shlex.split(
-                f'ffprobe -v error -select_streams v:0 -count_packets -show_entries stream=nb_read_packets -of csv=p=0 -of json {file}'), stdout=subprocess.PIPE).stdout
-            # Convert data from JSON string to dictionary
-            dict = json.loads(data)
-            # Get the total number of frames.
-            tot_n_frames = float(dict['streams'][0]['nb_read_packets'])
-            cmd = shlex.split(
-                f'ffmpeg -y -loglevel error -i {file} -strict -2 -progress pipe:1 {outputfile}.{format}')
-            process = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+@app.route("/done", methods=["GET", "POST"])
+def done():
+    if request.method == "GET":
+        if not session["name"]:
+            return redirect(
+                url_for("error", text="Please Enter a Valid Link", code=403)
+            )
+        return render_template("done.html")
+    name = session["name"]
+    p = os.getcwd()
+    return send_from_directory(p, name, as_attachment=True)
 
-            q = [0]  # We don't really need to use a Queue - use a list of of size 1
-            progress_reader_thread = Thread(target=progress_reader, args=(
-                process, q))  # Initialize progress reader thread
-            progress_reader_thread.start()  # Start the thread
-
-            while True:
-                if process.poll() is not None:
-                    break  # Break if FFmpeg sun-process is closed
-
-                time.sleep(1)  # Sleep 1 second (do some work...)
-
-                # Read last element from progress_reader - current encoded frame
-                n_frame = q[0]
-                progress_percent = (n_frame/tot_n_frames)*100   # Convert to percentage.
-                progress_percent = round(progress_percent)
-                print(f"Progress: {progress_percent}%")
-                socketio.emit("update", progress_percent)
-            process.stdout.close()          # Close stdin pipe.
-            progress_reader_thread.join()   # Join thread
-            process.wait()                  # Wait for FFmpeg sub-process to finish
-            session["name"] = f"{title.split('.')[0]}.{format}"
-            return title
-        else:
-            session["name"] = title
-            return title
-    except Exception as e:
-        print(e)
-        pass
-    return title
-
-
-@socketio.on_error_default  # handles all namespaces without an explicit error handler
-def default_error_handler(e):
-    print(e)
 
 @socketio.on('ping')
 def ping(ping):
@@ -259,6 +258,7 @@ def ping(ping):
         time.sleep(30)
         print(ping)
         socketio.emit("ping", ping)
+
 
 @app.route("/error")
 def error():
@@ -305,4 +305,3 @@ def webhook():
     args = shlex.split(command_line)
     subprocess.Popen(args, cwd=pwd)
     return "okay"
-
