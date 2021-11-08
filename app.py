@@ -239,6 +239,11 @@ def process():
         process()
     return title
 
+
+@socketio.on_error_default  # handles all namespaces without an explicit error handler
+def default_error_handler(e):
+    print(e)
+
 @socketio.on('ping')
 def ping(ping):
     while True:
@@ -273,6 +278,7 @@ def apology(message, code=400):
 @app.errorhandler(Exception)
 def errorhandler(e):
     """Handle error"""
+    print(e)
     if not isinstance(e, HTTPException):
         e = InternalServerError()
     return apology(e.name, e.code)
@@ -290,6 +296,3 @@ def webhook():
     subprocess.Popen(args, cwd=pwd)
     return "okay"
 
-
-if __name__ == "__main__":
-    socketio.run(app)
