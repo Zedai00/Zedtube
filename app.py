@@ -184,13 +184,14 @@ def process():
     try:
         ydl_opts = {
             'progress_hooks': [my_hook],
+            'outmpl': '%(title)s'+'.mkv'
         }
         with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(url, download=False)
+            title = ydl.prepare_filename(info)
             ydl.download([url])
-        command_line = f"youtube-dl {url} --get-filename"
-        title = subprocess.check_output(
-            shlex.split(command_line)).decode("utf-8").strip()
-        print(title)
+        title = title.split('.')[0]
+        title = title+'.mkv'
         if format:
             print(format)
             socketio.emit("mode", "convert")
@@ -233,10 +234,9 @@ def process():
             session["name"] = f"{title.split('.')[0]}.{format}"
         else:
             session["name"] = title
-    except:
-        args = shlex.split("youtube-dl --rm-cache-dir")
-        subprocess.call(args)
-        process()
+    except Exception as e:
+        print(e)
+        
     return title
 
 
@@ -247,7 +247,7 @@ def default_error_handler(e):
 @socketio.on('ping')
 def ping(ping):
     while True:
-        time.sleep(10)
+        time.sleep(30)
         print(ping)
         socketio.emit("ping", ping)
 

@@ -55,6 +55,8 @@ wait
         let bar = document.getElementsByClassName('progress-bar')[0];
         bar.style.width = "0%";
         bar.setAttribute('aria-valuenow', 0);
+        let percent = document.getElementById('percent')
+        percent.innerHTML = "0%"
         $('#comp').hide();
         $(".progress").show();
         $("#percent").show();
