@@ -6,9 +6,9 @@ wait
 <link rel="stylesheet" href="{{ url_for('static', filename='css/download.css') }}">
 <div class="download" id="loading">
     <div id="wait">
-        <div hidden id="comp">
+        <div id="comp" style="display: flex;">
             <h5>Completing The Process Please Wait</h5>
-            <div hidden class="spinner-border" style="width: 3rem; height: 3rem;" role="status">
+            <div class="spinner-border" style="width: 3rem; height: 3rem;" role="status">
                 <span class="sr-only">Loading...</span>
             </div>
         </div>
@@ -25,12 +25,13 @@ wait
     integrity="sha384-KAZ4DtjNhLChOB/hxXuKqhMLYvx3b5MlT55xPEiNmREKRzeEm+RVPlTnAn0ajQNs"
     crossorigin="anonymous"></script>
 <script type="text/javascript">
+    $('#comp').hide();
     var socket = io();
     socket.on('connect', function () {
         console.log('connected');
         setInterval(() => {
             socket.emit('ping', 'ping')
-        }, 10000);
+        }, 30000);
     })
     socket.on('ping', function (ping) {
         socket.emit('ping', ping)
@@ -39,6 +40,7 @@ wait
         if (progress == 100) {
             $('.progress').hide();
             $('#percent').hide();
+            $('#title').hide();
             $('#comp').show();
         }
         else
@@ -60,6 +62,7 @@ wait
         $('#comp').hide();
         $(".progress").show();
         $("#percent").show();
+        $('#title').show();
         document.getElementById('title').innerHTML = "We Are Converting Your Video To Your Selected Format";
         console.log(mode);
     })

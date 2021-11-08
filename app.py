@@ -182,7 +182,7 @@ def process():
     url = session["url"]
     format = session["format"].lower()
     try:
-        subprocess.call(shlex.spilt("youtube-dl --rm-cache-dir"))
+        subprocess.run(shlex.split("youtube-dl --rm-cache-dir"), stdout=subprocess.PIPE)
         ydl_opts = {
             'progress_hooks': [my_hook],
             'outmpl': '%(title)s'+'.mkv'
@@ -237,7 +237,6 @@ def process():
             session["name"] = title
     except Exception as e:
         print(e)
-        
     return title
 
 
