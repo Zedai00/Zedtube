@@ -133,7 +133,6 @@ def progress_reader(procs, q):
                 '=')[-1])  # Get the frame number
             q[0] = frame  # Store the last sample
 
-
 @app.route("/converter")
 def converter():
     file = session["file"]
@@ -177,20 +176,26 @@ def converter():
     session["name"] = f"{session['file'].split('.')[0]}.{format}"
     return redirect(url_for("done"))
 
+def down(url):
+    ydl_opts = {
+        'progress_hooks': [my_hook],
+        'outmpl': '%(title)s'+'.mkv'
+    }
+    with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+        ydl._ies = [ydl.get_info_extractor('Youtube')]
+        info = ydl.extract_info(url, download=False)
+        title = ydl.prepare_filename(info)
+        ydl.download([url])
+        session["name"] = title
+
 @app.route("/process")
 def process():
     url = session["url"]
+    download = Thread(target=down, args=(url,))
+    download.start()
     format = session["format"].lower()
+    title = session["name"]
     try:
-        ydl_opts = {
-            'progress_hooks': [my_hook],
-            'outmpl': '%(title)s'+'.mkv'
-        }
-        with youtube_dl.YoutubeDL(ydl_opts) as ydl:
-            ydl._ies = [ydl.get_info_extractor('Youtube')]
-            info = ydl.extract_info(url, download=False)
-            title = ydl.prepare_filename(info)
-            ydl.download([url])
         title = title.split('.')[0]
         title = title+'.mkv'
         if format:
