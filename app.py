@@ -22,7 +22,7 @@ from flask import (
 )
 from flask_session import Session
 from werkzeug.exceptions import HTTPException, InternalServerError, default_exceptions
-from flask_socketio import SocketIO, emit
+from flask_socketio import SocketIO
 
 app = Flask(__name__)
 app.config["SESSION_FILE_DIR"] = mkdtemp()
@@ -31,6 +31,7 @@ app.config["SESSION_PERMANENT"] = False
 app.config["secret_key"] = os.getenv("SECRET_KEY")
 Session(app)
 socketio = SocketIO(app)
+app.config.update(SESSION_COOKIE_SAMESITE="None", SESSION_COOKIE_SECURE=True)
 
 
 @socketio.on("connect")
@@ -120,6 +121,7 @@ def progress_reader(procs, q):
 
 def down(url, format):
     with app.test_request_context():
+        e = 0
         try:
             ydl_opts = {
                 'progress_hooks': [my_hook],
@@ -136,6 +138,7 @@ def down(url, format):
             if format:
                 socketio.emit("mode", 'converter')
                 file = title
+                title = title
                 print('format1')
                 file = re.escape(file)
                 print('format1')
@@ -176,18 +179,24 @@ def down(url, format):
                     progress_percent = round(progress_percent)
                     print(f"Progress: {progress_percent}%")
                     socketio.emit("update", progress_percent)
-                    session["title"] = title
                 process.stdout.close()          # Close stdin pipe.
                 progress_reader_thread.join()   # Join thread
                 process.wait()                  # Wait for FFmpeg sub-process to finish
-                socketio.emit("complete", 'done')
+                print(title)
+                title = title.split(".")[0]
+                title = f"{title}.{format}"
+                print(title)
+                socketio.emit("complete", {'progress': 'Done', 'title': title})
             else:
-                session["name"] = title
-                socketio.emit("complete", 'done')
+                socketio.emit("complete", {'progress': 'Done', 'title': title})
                 return title
-        except:
-            subprocess.call(shlex.split("youtube-dl --rm-cache-dir"))
-            down(url, format)
+        except Exception as error:
+            if e == 0:
+                e = 1
+                subprocess.call(shlex.split("youtube-dl --rm-cache-dir"))
+                down(url, format)
+            else:
+                apology(error, 400)
 
 
 @app.route("/process")
@@ -240,19 +249,21 @@ def converter():
     process.stdout.close()          # Close stdin pipe.
     progress_reader_thread.join()   # Join thread
     process.wait()                  # Wait for FFmpeg sub-process to finish
-    session["name"] = f"{session['file'].split('.')[0]}.{format}"
-    socketio.emit("complete", 'done')
+    title = f"{session['file'].split('.')[0]}.{format}"
+    time.sleep(1)
+    socketio.emit("complete", {'progress': 'Done', 'title': title})
+    return "ok"
 
 
 @app.route("/done", methods=["GET", "POST"])
 def done():
-    if request.method == "GET":
-        if not session["title"]:
-            return redirect(
-                url_for("error", text="Please Enter a Valid Link", code=403)
-            )
-        return render_template("done.html")
-    name = session["title"]
+    if not request.form.get("file"):
+        return redirect(
+            url_for("error", text="Please Enter a Valid Link", code=403)
+        )
+    title = request.form.get("file")
+    print(title)
+    name = title
     p = os.getcwd()
     return send_from_directory(p, name, as_attachment=True)
 

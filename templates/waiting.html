@@ -8,14 +8,23 @@ wait
     <div id="wait">
         <h5 id="title">Please Wait While We Are Downloading Your Video On Our Servers</h5>
         <div class="progress">
-            <div hidden class="spinner-border" style="width: 3rem;height: 3rem;margin-left: auto;margin-right: auto;display: block;" role="status">
-                <span class="sr-only">Loading...</span>
-            </div>
             <div class="progress-bar" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0"
-                aria-valuemax="100"></div>
+            aria-valuemax="100"></div>
+        </div>
+        <div hidden class="spinner-border" style="width: 3rem;height: 3rem;margin-left: auto;margin-right: auto;display: block;" role="status">
+            <span class="sr-only">Loading...</span>
         </div>
         <h6 id="percent">0%</h6>
     </div>
+    <form id="d" hidden action="/done" method="post">
+        <div id="link">
+            <h4>Congratulation! Your Download Link Is Ready</h4>
+        </div>
+        <input type="hidden" id="file" name="file" value=""></input>
+        <div id="submit">
+            <input name="down" id="down" class="btn btn-primary btn-lg" type="submit" value="Download"></input>
+        </div>
+    </form>
 </div>
 {% if r == "/download" %}
 <script src="https://cdn.socket.io/4.3.2/socket.io.min.js"
@@ -34,27 +43,30 @@ wait
     })
     socket.on('update', function (progress) {
         if (progress == 100) {
-            $('.progress-bar').attr('hidden', 'hidden')
+            $('.progress').attr('hidden', 'hidden')
             $('#percent').hide();
             $('#title').text('Completing The Process Kindly Pleas Wait');
             $('.spinner-border').removeAttr('hidden');
         }
-        else
-        {
-            $('.progress-bar').show();
-            $('#percent').show();
-            $('.spinner-border').attr('hidden', 'hidden');
-            $('.progress-bar').css('width', progress + '%');
-            $('.progress-bar').attr('aria-valuenow', progress);
-            $('#percent').text(progress + '%');
+        else {
+        $('.progress-bar').css('width', progress + '%');
+        $('.progress-bar').attr('aria-valuenow', progress);
+        $('#percent').text(progress + '%');
         }
+    })
+    socket.on('complete', function (progress) {
+        console.log(progress.progress);
+        console.log(progress.title);
+        $('#file').attr('value', progress.title);
+        $('#wait').attr('hidden', 'hidden');
+        $('#d').removeAttr('hidden');
     })
     socket.on('mode', function (mode) {
         $('.spinner-border').attr('hidden', 'hidden');
         $('.progress-bar').attr('style', 'width: 0%');
         $('.progress-bar').attr('aria-valuenow', 0);
         $('#percent').text('0%');
-        $(".progress").show();
+        $(".progress").removeAttr('hidden');
         $("#percent").show();
         $('#title').text("We Are Converting Your Video To Your Selected Format");
         $('#title').show();
@@ -63,10 +75,6 @@ wait
     fetch('process');
     $(window).on('load', function () {
         $('#loading').show();
-    })
-    socket.on('complete', function (data) {
-        print(data);
-        window.location.href = '/done';
     })
 </script>
 {% else %}
@@ -79,24 +87,32 @@ wait
         console.log('connected');
     })
     socket.on('update', function (progress) {
-            $('#comp').hide();
-            console.log(progress);
-            document.getElementById('percent').innerHTML = progress + "%";
-            let bar = document.getElementsByClassName('progress-bar')[0];
-            bar.style.width = progress + "%";
-            bar.setAttribute('aria-valuenow', progress);
+            if (progress == 100) {
+            $('.progress').attr('hidden', 'hidden')
+            $('#percent').hide();
+            $('#title').text('Completing The Process Kindly Please Wait');
+            $('.spinner-border').removeAttr('hidden');
+        }
+        else {
+            $('.progress-bar').css('width', progress + '%');
+            $('.progress-bar').attr('aria-valuenow', progress);
+            $('#percent').text(progress + '%');
+        }
     })
-        let bar = document.getElementsByClassName('progress-bar')[0];
-        bar.style.width = "0%";
-        bar.setAttribute('aria-valuenow', 0);
-        $('#comp').hide();
-        $(".progress").show();
-        $("#percent").show();
-        document.getElementById('title').innerHTML = "We Are Converting Your Video To Your Selected Format";
-    function navigate() {
-        window.location.href = 'done';  // redirect when done!
-    }
-    fetch('converter').then(navigate);
+    socket.on('complete', function (progress) {
+            console.log(progress.progress);
+            console.log(progress.title);
+            $('#file').attr('value', progress.title);
+            $('#wait').attr('hidden', 'hidden');
+            $('#d').removeAttr('hidden');
+        })
+    let bar = document.getElementsByClassName('progress-bar')[0];
+    bar.style.width = "0%";
+    bar.setAttribute('aria-valuenow', 0);
+    $(".progress").show();
+    $("#percent").show();
+    document.getElementById('title').innerHTML = "We Are Converting Your Video To Your Selected Format";
+    fetch('converter');
     $(window).on('load', function () {
         $('#loading').show();
     })
