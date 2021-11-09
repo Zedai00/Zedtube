@@ -33,7 +33,7 @@ wait
 <script type="text/javascript">
     var socket = io();
     socket.on('connect', function () {
-        console.log('connected');
+        // console.log('connected');
         setInterval(() => {
             socket.emit('ping', 'ping')
         }, 50000);
@@ -55,8 +55,8 @@ wait
         }
     })
     socket.on('complete', function (progress) {
-        console.log(progress.progress);
-        console.log(progress.title);
+        // console.log(progress.progress);
+        // console.log(progress.title);
         $('#file').attr('value', progress.title);
         $('#wait').attr('hidden', 'hidden');
         $('#d').removeAttr('hidden');
@@ -70,7 +70,7 @@ wait
         $("#percent").show();
         $('#title').text("We Are Converting Your Video To Your Selected Format");
         $('#title').show();
-        console.log(mode);
+        // console.log(mode);
     })
     fetch('process');
     $(window).on('load', function () {
@@ -84,7 +84,7 @@ wait
 <script type="text/javascript">
     var socket = io();
     socket.on('connect', function () {
-        console.log('connected');
+        // console.log('connected');
     })
     socket.on('update', function (progress) {
             if (progress == 100) {
@@ -100,8 +100,8 @@ wait
         }
     })
     socket.on('complete', function (progress) {
-            console.log(progress.progress);
-            console.log(progress.title);
+            // console.log(progress.progress);
+            // console.log(progress.title);
             $('#file').attr('value', progress.title);
             $('#wait').attr('hidden', 'hidden');
             $('#d').removeAttr('hidden');
