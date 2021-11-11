@@ -1,5 +1,6 @@
 from __future__ import unicode_literals
 
+from deleteFiles import delete_files
 import atexit
 import os
 import re
@@ -46,6 +47,10 @@ with open("formats.txt", "r") as file:
     for line in file:
         formats.append(line.strip())
 
+
+def apology(message, code=400):
+    """Render message as an apology to user."""
+    return render_template("error.html", top=code, bottom=message), code
 
 @app.route("/")
 def index():
@@ -196,7 +201,7 @@ def down(url, format):
                 subprocess.call(shlex.split("youtube-dl --rm-cache-dir"))
                 down(url, format)
             else:
-                apology(error, 400)
+               return apology(error, 400)
 
 
 @app.route("/process")
@@ -275,6 +280,10 @@ def ping(ping):
         print(ping)
         socketio.emit("ping", ping)
 
+@socketio.on('disconnecting')
+def disconnecting():
+    print('Client disconnected')
+    delete_files()
 
 @app.route("/error")
 def error():
@@ -294,11 +303,6 @@ def delete():
 
 
 atexit.register(delete)
-
-
-def apology(message, code=400):
-    """Render message as an apology to user."""
-    return render_template("error.html", top=code, bottom=message), code
 
 
 @app.errorhandler(Exception)

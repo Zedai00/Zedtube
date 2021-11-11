@@ -28,6 +28,10 @@
         <link rel="stylesheet" href="{{ url_for('static', filename='css/heading.css') }}">
         <!--<link rel="stylesheet" href="../static/css/body.css"> -->
         <link rel="stylesheet" href="{{ url_for('static', filename='css/body.css') }}">
+        <!-- Socket.IO -->
+        <script src="https://cdn.socket.io/4.3.2/socket.io.min.js"
+            integrity="sha384-KAZ4DtjNhLChOB/hxXuKqhMLYvx3b5MlT55xPEiNmREKRzeEm+RVPlTnAn0ajQNs"
+            crossorigin="anonymous"></script>
     </head>
     <body id="page-top">
         <nav class="navbar navbar-expand-lg bg-secondary fixed-top" id="mainNav">
@@ -59,5 +63,11 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.min.js"></script>
         <!-- Core theme JS-->
         <script src="../static/scripts.js"></script>
+        <script>
+            var socket = io();
+            window.onbeforeunload = function () {
+                    socket.emit('disconnecting', "disconnected");
+                }
+        </script>
     </body>
 </html>

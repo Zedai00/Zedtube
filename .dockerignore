@@ -7,3 +7,6 @@ Zedtube
 *.avi
 *.webm
 test.py
+.git
+.github
+.gitignore
