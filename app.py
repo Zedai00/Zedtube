@@ -129,10 +129,7 @@ def progress_reader(procs, q):
 def down(url, format):
     with app.test_request_context():
         try:
-            ydl_opts = {
-                "progress_hooks": [my_hook],
-                "outtmpl": "%(title)s.%(ext)s"
-            }
+            ydl_opts = {"progress_hooks": [my_hook], "outtmpl": "%(title)s.%(ext)s"}
             title = ""
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 info = ydl.extract_info(url, download=False)
@@ -273,13 +270,6 @@ def done():
     name = title
     p = os.getcwd()
     return send_from_directory(p, name, as_attachment=True)
-
-
-@socketio.on("ping")
-def ping(ping):
-    while True:
-        time.sleep(50)
-        socketio.emit("ping", ping)
 
 
 @socketio.on("disconnecting")

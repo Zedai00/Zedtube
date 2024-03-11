@@ -9,3 +9,4 @@ Zedtube
 *.webm
 test.py
 test
+.vercel
