@@ -1,7 +1,6 @@
 from __future__ import unicode_literals
 
 import atexit
-import glob
 import json
 import os
 import re
@@ -201,7 +200,6 @@ def down(url, format):
 
 @app.route("/process")
 def process():
-    subprocess.run(shlex.split("yt-dlp --rm-cache-dir"))
     url = session["url"]
     format = session["format"].lower()
     download = Thread(target=down, args=(url, format))
