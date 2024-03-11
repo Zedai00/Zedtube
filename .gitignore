@@ -1,5 +1,6 @@
 __pycache__
 .vscode
+venv
 Zedtube
 *.mp4
 *.mkv
