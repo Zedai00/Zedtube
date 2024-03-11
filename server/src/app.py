@@ -43,10 +43,7 @@ def connect():
 
 
 pwd = os.path.dirname(os.path.abspath(__file__))
-formats = []
-with open(os.path.join(pwd, "formats.txt"), "r") as file:
-    for line in file:
-        formats.append(line.strip())
+formats = ["MP4", "MOV", "FLV", "AVI", "WEBM", "MKV"]
 
 
 def apology(message, code=400):

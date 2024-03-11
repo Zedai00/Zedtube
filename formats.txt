@@ -1,6 +1,0 @@
-MP4
-MOV
-FLV
-AVI
-WEBM
-MKV
