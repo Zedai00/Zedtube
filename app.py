@@ -1,7 +1,9 @@
 from __future__ import unicode_literals
 
 import atexit
+import io
 import json
+import mimetypes
 import os
 import re
 import shlex
@@ -16,7 +18,7 @@ from flask import (
     redirect,
     render_template,
     request,
-    send_from_directory,
+    send_file,
     session,
     url_for,
 )
@@ -55,6 +57,8 @@ def apology(message, code=400):
 def index():
     session.clear()
     session["name"] = None
+    session["return_data"] = None
+    session["mimeType"] = None
     return render_template("index.html")
 
 
@@ -261,10 +265,28 @@ def done():
     if not request.form.get("file"):
         return redirect(url_for("error", text="Please Enter a Valid Link", code=403))
     title = request.form.get("file")
-    print(title)
-    name = title
     p = os.getcwd()
-    return send_from_directory(p, name, as_attachment=True)
+    if session["return_data"] is None:
+        print(title)
+        return_data = io.BytesIO()
+        with open(f"{p}/{title}", "rb") as fo:
+            return_data.write(fo.read())
+        mimeType, _ = mimetypes.guess_type(f"{p}/{title}")
+        return_data.seek(0)
+        os.remove(f"{p}/{title}")
+        session["return_data"] = return_data
+        session["mimeType"] = mimeType
+    else:
+        return_data = session["return_data"]
+        return_data.seek(0)
+        mimeType = session["mimeType"]
+    return send_file(
+        return_data,
+        mimetype=mimeType,
+        as_attachment=True,
+        download_name=title,
+    )
+    # return send_from_directory(p, title, as_attachment=True)
 
 
 @socketio.on("disconnecting")
