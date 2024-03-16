@@ -280,17 +280,7 @@ def error():
     return apology(text, code)
 
 
-def delete():
-    with app.app_context():
-        root = os.listdir(pwd)
-        for i in root:
-            with open(f"{pwd}/formats.txt") as file:
-                for line in file:
-                    if i.endswith(line.strip().lower()) or i.endswith(".part"):
-                        os.remove(pwd + "/" + i)
-
-
-atexit.register(delete)
+atexit.register(delete_files)
 
 
 @app.errorhandler(Exception)
@@ -313,3 +303,7 @@ def webhook():
     args = shlex.split(command_line)
     subprocess.Popen(args, cwd=pwd)
     return "okay"
+
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", debug=True, port=5500)
